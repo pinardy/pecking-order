@@ -1,10 +1,8 @@
 # Pecking Order
 
-A barnyard fighting game for your phone. Two chickens, three rounds, one coop. Peck, kick and crow your way to the top.
+A barnyard fighting game. Peck, kick and crow your way to the top.
 
 ![Henrietta kicks Duke in the barnyard arena](docs/screenshot.png)
-
-The chickens are drawn in the style of [Exploding Chickens](https://github.com/pinardy/exploding-chickens): flat shapes in a barn-brown, straw and cream palette.
 
 ## Features
 
