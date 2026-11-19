@@ -1,0 +1,1029 @@
+/* The menus: title, fighter select, the pairing card and the result. */
+
+.screen {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.2rem max(1.1rem, env(safe-area-inset-right, 0px)) 1.2rem max(1.1rem, env(safe-area-inset-left, 0px));
+}
+
+.portrait {
+  display: block;
+  flex: none;
+}
+
+/* The title screen: today's arena across the top, the sign hung over its lower edge, the menu below
+   on plain barn brown. Held sideways, the arena takes the left half and the menu the right. */
+.title {
+  justify-content: flex-start;
+  text-align: center;
+  gap: 1.1rem;
+  padding-top: 0;
+}
+
+.title-head {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  align-self: stretch;
+  min-height: 13rem;
+  /* On a tall, narrow phone the arena would otherwise zoom in until the fighters crowd each other. */
+  max-height: min(31rem, 100vw);
+  /* Out to the edges of the screen. */
+  margin: 0 calc(-1 * max(1.1rem, env(safe-area-inset-left, 0px)));
+}
+
+.title-scene {
+  position: absolute;
+  inset: 0 0 1.6rem;
+  overflow: hidden;
+  /* The arena fades into the barn brown below it. */
+  mask-image: linear-gradient(to bottom, #000 70%, transparent);
+}
+/* Drawn taller than the box and pinned to its bottom, so the top of the sky is what gets cut off. */
+.title-scene canvas {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: block;
+  width: 100%;
+  height: 130%;
+}
+
+/* The sign: a painted board fixed across the bottom of the arena, a little off straight. It drops into place once. */
+.sign {
+  position: relative;
+  padding: 0.25em 0.6em 0.3em;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 0.55rem 50%, rgba(43, 26, 18, 0.55) 0 2.5px, transparent 3.5px),
+    radial-gradient(circle at calc(100% - 0.55rem) 50%, rgba(43, 26, 18, 0.55) 0 2.5px, transparent 3.5px),
+    linear-gradient(to bottom, transparent calc(50% - 1px), rgba(43, 26, 18, 0.22) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+    var(--barn);
+  box-shadow: 0 6px 0 var(--barn-deep), 0 14px 22px rgba(20, 8, 2, 0.45);
+  rotate: -1.5deg;
+  animation: sign-drop 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) 0.15s both;
+}
+.title h1 {
+  margin: 0;
+  font-size: clamp(2.1rem, 10vw, 3.6rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--cream);
+  /* Paint on wood: a little worn, a little shadowed. */
+  text-shadow: 0 3px 0 var(--barn-deep);
+  white-space: nowrap;
+}
+@keyframes sign-drop {
+  from {
+    opacity: 0;
+    translate: 0 -1.6rem;
+    rotate: -6deg;
+  }
+}
+
+.lede {
+  margin: 1.1rem 0 0;
+  max-width: 30ch;
+  line-height: 1.35;
+}
+
+.title-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  width: min(100%, 21rem);
+}
+
+.title-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 0.7rem;
+}
+
+/* On a wide screen the arena is a framed picture rather than running off the edges. */
+@media (min-width: 760px) and (min-height: 561px) {
+  .title {
+    justify-content: center;
+  }
+  .title-head {
+    flex: 0 1 26rem;
+    align-self: center;
+    width: 44rem;
+    margin: 1rem 0 0;
+  }
+  .title-scene {
+    border-radius: 24px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .title {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 1.6rem;
+    padding: 0 max(1.1rem, env(safe-area-inset-right, 0px)) 0 0;
+  }
+  .title-head {
+    flex: 1 1 50%;
+    max-height: none;
+    min-height: 0;
+    margin: 0;
+    padding-bottom: 1.2rem;
+  }
+  .title-scene {
+    inset: 0;
+    mask-image: linear-gradient(to right, #000 75%, transparent);
+  }
+  .title h1 {
+    font-size: clamp(1.8rem, 5.5vw, 3rem);
+  }
+  .title-menu {
+    align-self: center;
+    flex: 0 1 21rem;
+  }
+  button.big {
+    font-size: 1.1rem;
+    padding: 0.4em 1.2em 0.45em;
+  }
+}
+
+.select {
+  align-items: stretch;
+  gap: 0.8rem;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.bar h1 {
+  flex: 1;
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--straw);
+}
+
+.pick-arena {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.pick-arena select {
+  max-width: 11rem;
+  padding: 0.4em 0.6em;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  background: var(--panel);
+  color: var(--cream);
+  box-shadow: inset 0 0 0 2px rgba(255, 246, 227, 0.35);
+}
+
+.pick-arena option {
+  color: var(--ink);
+  background: var(--cream);
+}
+
+.select-body {
+  display: grid;
+  gap: 0.8rem;
+  align-content: start;
+}
+
+.roster {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.fighter-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.4rem 0.2rem 0.45rem;
+  border-radius: 16px;
+  font-size: 0.86rem;
+  background: var(--panel);
+  color: var(--cream);
+  box-shadow: none;
+}
+
+.fighter-card.on {
+  background: var(--straw);
+  color: var(--ink);
+  box-shadow: 0 3px 0 var(--straw-deep);
+}
+
+.fighter-card em {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  padding: 0 0.5em;
+  border-radius: 99px;
+  font-style: normal;
+  font-size: 0.72rem;
+  background: var(--barn);
+  color: var(--cream);
+}
+
+.detail {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.9rem 0.6rem 0.4rem;
+  border-radius: 18px;
+  background: var(--panel);
+}
+
+.detail-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail h2 {
+  margin: 0;
+  font-size: 1.45rem;
+  line-height: 1.1;
+  color: var(--straw);
+}
+
+.tagline {
+  margin: 0.1rem 0 0.5rem;
+  font-size: 0.92rem;
+  opacity: 0.85;
+}
+
+.pip-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.2rem 1rem;
+}
+
+.pips {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.pip-row {
+  display: flex;
+  gap: 3px;
+}
+
+.pip-row i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 246, 227, 0.2);
+}
+
+.pip-row i.on {
+  background: var(--straw);
+}
+
+.kit {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  opacity: 0.75;
+}
+
+.select-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-top: auto;
+}
+
+.select-foot > button:last-child {
+  margin-left: auto;
+}
+
+@media (orientation: landscape) and (min-width: 600px) {
+  .select-body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    align-items: stretch;
+  }
+}
+
+.versus {
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+.caption {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--straw);
+}
+
+.versus-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.2rem, 3vw, 2rem);
+}
+
+.versus .portrait {
+  width: min(150px, 36vw) !important;
+  height: min(150px, 36vw) !important;
+}
+
+.corner h2 {
+  margin: 0.3rem 0 0;
+  font-size: 1.35rem;
+}
+
+.corner p {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.vs {
+  font-size: clamp(2rem, 9vw, 3.6rem);
+  font-weight: 700;
+  color: var(--straw);
+  text-shadow: 0 4px 0 var(--straw-deep), 0 9px 0 rgba(20, 8, 2, 0.35);
+}
+
+.key-hint {
+  max-width: 34ch;
+}
+
+.from-left {
+  animation: slide-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+  --from: -60px;
+}
+
+.from-right {
+  animation: slide-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+  --from: 60px;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--from));
+  }
+}
+
+.result {
+  justify-content: center;
+  text-align: center;
+  gap: 0.6rem;
+}
+
+.result h1 {
+  margin: 0;
+  font-size: clamp(1.9rem, 8vw, 3rem);
+  line-height: 1;
+  color: var(--straw);
+  text-shadow: 0 3px 0 var(--straw-deep), 0 7px 0 rgba(20, 8, 2, 0.35);
+}
+
+.result blockquote {
+  margin: 0.5rem 0 0;
+  max-width: 30ch;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-top: 0.9rem;
+}
+
+.ending {
+  margin: 0.5rem 0 0;
+  max-width: 34ch;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .from-left,
+  .from-right {
+    animation: none;
+  }
+}
+
+/* Screens fade and rise into place. (Reduced motion turns every animation off.) */
+.screen {
+  animation: screen-in 0.22s ease-out both;
+}
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.mode-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.mode-row button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.55em 0.2em 0.6em;
+  border-radius: 16px;
+  font-size: 1rem;
+}
+.mode-row small {
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.detail {
+  flex-wrap: wrap;
+}
+.style {
+  margin: 0 0 0.45rem;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+.style b {
+  font-weight: 600;
+  color: var(--straw);
+}
+.kit {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  opacity: 1;
+}
+.kit .chip {
+  padding: 0.25em 0.7em;
+  font-size: 0.76rem;
+}
+.kit small {
+  width: 100%;
+  opacity: 0.7;
+}
+.move-preview {
+  flex: none;
+  border-radius: 12px;
+  background: rgba(20, 8, 2, 0.25);
+}
+.arenas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.arenas > div {
+  display: flex;
+  gap: 0.35rem;
+}
+.arena-pick {
+  width: 60px;
+  height: 45px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  font-size: 1.3rem;
+  background: var(--panel);
+  color: var(--cream);
+  box-shadow: inset 0 0 0 2px rgba(255, 246, 227, 0.25);
+}
+.arena-pick canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.arena-pick.on,
+.arena-pick.on:active {
+  box-shadow: 0 0 0 3px var(--straw);
+}
+
+.stats {
+  margin-top: 0.4rem;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.stats th,
+.stats td {
+  padding: 0.12rem 0.7rem;
+}
+.stats thead th {
+  font-weight: 600;
+  color: var(--straw);
+}
+.stats tbody th {
+  text-align: left;
+  font-weight: 500;
+  opacity: 0.8;
+}
+.tip {
+  max-width: 34ch;
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  text-align: left;
+  background: var(--panel);
+}
+.tip b {
+  color: var(--straw);
+}
+
+.tournament {
+  align-items: stretch;
+}
+.entrants,
+.ties ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.entrants li {
+  display: flex;
+  gap: 0.5rem;
+}
+.entrants input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.4rem 0.8rem;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  background: var(--panel);
+  color: var(--cream);
+}
+.entrants button {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: 9.5rem;
+  padding: 0.15rem 0.8rem 0.15rem 0.3rem;
+  font-size: 0.9rem;
+}
+.ties h2 {
+  margin: 0 0 0.3rem;
+  font-size: 1rem;
+  color: var(--straw);
+}
+.ties li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  background: var(--panel);
+}
+.ties li.up {
+  box-shadow: inset 0 0 0 2px var(--straw);
+}
+.ties small {
+  opacity: 0.6;
+}
+.ties .won {
+  font-weight: 600;
+  color: var(--straw);
+}
+.ties .lost {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.daily {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 0.6rem;
+  padding: 0.5em 1em;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  background: var(--panel);
+  color: var(--cream);
+  box-shadow: inset 0 0 0 2px var(--leaf);
+}
+.daily small {
+  font-size: 0.74rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+.record {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+.record .link {
+  padding: 0;
+  font-size: inherit;
+  color: var(--straw);
+}
+.crashed {
+  justify-content: center;
+  text-align: center;
+}
+.crashed h1 {
+  margin: 0;
+  color: var(--straw);
+}
+.crashed .fine {
+  max-width: 34ch;
+}
+
+/* On a phone the select screen is taller than the screen: the button that moves things on stays in reach. */
+@media (max-width: 600px) {
+  .select-foot {
+    display: contents;
+  }
+  .select-foot > button:last-child {
+    position: sticky;
+    bottom: 0.3rem;
+    align-self: flex-end;
+    box-shadow: 0 3px 0 var(--straw-deep), 0 0 0 5px var(--table-deep);
+  }
+}
+
+.more-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.more-list button {
+  padding: 0.5em 1em;
+}
+
+/* The fighter's details: always shown where there is room, folded to a line on a phone until asked for. */
+.detail-toggle {
+  display: none;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--straw);
+}
+@media (max-width: 600px) {
+  .detail-toggle {
+    display: inline;
+  }
+  .detail:not(.open) .detail-more {
+    display: none;
+  }
+  .detail:not(.open) .portrait {
+    width: 76px !important;
+    height: 76px !important;
+  }
+  .detail:not(.open) .tagline {
+    margin-bottom: 0.2rem;
+  }
+}
+
+/* The bar across the top of a screen. Back is always at its left-hand end. */
+.screen > .bar {
+  align-self: stretch;
+  flex: none;
+}
+.bar > .link:first-child {
+  margin-left: -0.5em;
+  padding: 0.6em 0.7em;
+}
+/* A result screen keeps its content centred below the bar. */
+.result {
+  justify-content: flex-start;
+}
+.result-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+/* Every screen with a bar along the top uses the same column, so Back and the content line up from screen to screen. */
+.select,
+.online,
+.tournament,
+.result {
+  width: 100%;
+  max-width: 44rem;
+  margin: 0 auto;
+}
+/* Like the record line, the switch takes a line of its own across the panel. */
+.feathers {
+  flex-basis: 100%;
+}
+.feathers .toggle {
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+/* On a phone held upright, the menu sits at the bottom, within reach of a thumb; any spare height opens up above it. */
+@media (max-width: 759px) and (orientation: portrait) {
+  .title-menu {
+    margin-top: auto;
+  }
+}
+
+/* Story scenes: the arena fills the screen, and the dialogue sits in a box over its lower part,
+   with a little tail pointing up towards whoever is speaking. */
+.cutscene {
+  position: relative;
+  justify-content: flex-start;
+  padding-top: 0;
+  padding-bottom: max(1.2rem, env(safe-area-inset-bottom, 0px));
+  cursor: pointer;
+  user-select: none;
+}
+.cutscene > .bar {
+  position: absolute;
+  top: 0.8rem;
+  left: 1.1rem;
+  right: 1.1rem;
+  z-index: 2;
+  justify-content: space-between;
+}
+.cutscene-count {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+.cutscene > .bar .link {
+  margin-right: -0.5em;
+  padding: 0.6em 0.7em;
+}
+/* Over a bright sky, the count and Skip need help to be read. */
+.cutscene > .bar > * {
+  text-shadow: 0 1px 3px rgba(20, 8, 2, 0.8), 0 0 8px rgba(20, 8, 2, 0.5);
+}
+/* The arena runs edge to edge above the dialogue, no taller than it is wide, so both birds always fit. */
+.cutscene-stage {
+  position: relative;
+  flex: none;
+  align-self: stretch;
+  height: min(58vh, 92vw);
+  margin: 0 calc(-1 * max(1.1rem, env(safe-area-inset-left, 0px))) -1.2rem;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 78%, transparent);
+}
+/* The dialogue sits just under the arena, over its fading floor. (A tap anywhere moves the scene on,
+   so it does not need to be within a thumb's reach.) */
+.cutscene .dialogue {
+  margin-top: -1.5rem;
+}
+.cutscene-stage canvas {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 130%;
+}
+.dialogue {
+  position: relative;
+  z-index: 1;
+  align-self: stretch;
+  max-width: 34rem;
+  margin: 0 auto;
+  width: 100%;
+  min-height: 7.5rem;
+  padding: 0.8rem 1.1rem 0.7rem;
+  border-radius: 18px;
+  text-align: left;
+  background: var(--panel);
+  box-shadow: inset 0 0 0 2px rgba(240, 194, 79, 0.55), 0 10px 24px rgba(20, 8, 2, 0.5);
+}
+.dialogue::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-bottom-color: var(--panel);
+}
+.dialogue.from-left::before {
+  left: 30%;
+}
+.dialogue.from-right::before {
+  right: 30%;
+}
+.dialogue.narrator::before {
+  display: none;
+}
+/* The speaker's head sits on their side of the box, in a round frame, and the words beside it. */
+.dialogue {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+.dialogue.from-right {
+  flex-direction: row-reverse;
+}
+.dialogue.from-right .said {
+  text-align: right;
+}
+.talking-head {
+  flex: none;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 38%, #8a5a3a, var(--table-deep) 75%);
+  box-shadow: 0 0 0 3px var(--straw);
+}
+.talking-head canvas {
+  display: block;
+}
+.said {
+  flex: 1;
+  min-width: 0;
+}
+.dialogue b {
+  display: block;
+  color: var(--straw);
+  font-size: 0.95rem;
+}
+.dialogue p {
+  margin: 0.15rem 0 0;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+.dialogue.narrator p {
+  opacity: 0.9;
+}
+.dialogue small {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.55rem;
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+/* Held sideways there is little height: the arena fills the screen and the dialogue sits over its floor. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .cutscene {
+    justify-content: flex-end;
+  }
+  .cutscene-stage {
+    position: absolute;
+    inset: 0;
+    height: auto;
+    margin: 0;
+    mask-image: none;
+  }
+  /* Raised, so the birds stand above the dialogue rather than behind it. */
+  .cutscene-stage canvas {
+    bottom: 26%;
+  }
+}
+
+/* Story and Arcade, side by side at the top of the title menu. */
+.big-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+.big-row button.big {
+  padding-left: 0.4em;
+  padding-right: 0.4em;
+}
+/* With the speaker's head on the right, "Next" moves to the other corner, out of its way. */
+.dialogue.from-right small {
+  right: auto;
+  left: 1rem;
+}
+
+/* Chapter select: a fighter, then their five chapters, one to a row. */
+.chapters {
+  align-items: stretch;
+  width: 100%;
+  max-width: 44rem;
+  margin: 0 auto;
+}
+.chapter-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.chapter {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  text-align: left;
+}
+.chapter b {
+  display: block;
+}
+.chapter small {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 500;
+  opacity: 0.75;
+}
+.chapter:disabled {
+  opacity: 0.45;
+}
+.chapter-number {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  font-weight: 700;
+  background: var(--straw);
+  color: var(--ink);
+}
+.chapter:disabled .chapter-number {
+  background: var(--panel);
+  color: var(--cream);
+}
+
+/* A choice in a story scene: two answers, each with what it does to the fight. */
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+.choices button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.5em 0.9em;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: left;
+}
+.choices small {
+  position: static;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.story-hub {
+  align-items: stretch;
+  width: 100%;
+  max-width: 44rem;
+  margin: 0 auto;
+}
+.hub {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: min(100%, 24rem);
+  margin: 0 auto;
+}
+.hub > button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.hub > button small {
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+.hub > button:disabled {
+  opacity: 0.45;
+}
+.hub h2 {
+  margin: 0.8rem 0 0;
+  font-size: 1rem;
+  color: var(--straw);
+}

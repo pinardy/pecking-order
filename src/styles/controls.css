@@ -1,0 +1,406 @@
+/* On-screen controls. Four things can change where they sit: orientation, handedness,
+   two-player mode and a dragged layout. The later rules in this file win, in that order. */
+
+.touch-controls {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.stick {
+  position: absolute;
+  left: max(14px, env(safe-area-inset-left, 0px));
+  bottom: 14px;
+  width: 136px;
+  height: 136px;
+  border-radius: 50%;
+  pointer-events: auto;
+  touch-action: none;
+  opacity: var(--pad-alpha, 0.84);
+  transform: scale(var(--pad-scale, 1));
+  transform-origin: left bottom;
+  background: rgba(43, 26, 18, 0.5);
+  box-shadow: inset 0 0 0 2px rgba(255, 246, 227, 0.26);
+}
+
+.stick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 58px;
+  height: 58px;
+  margin: -29px;
+  border-radius: 50%;
+  background: rgba(255, 246, 227, 0.6);
+  box-shadow: 0 3px 0 rgba(20, 8, 2, 0.35);
+}
+
+.pad {
+  position: absolute;
+  right: max(12px, env(safe-area-inset-right, 0px));
+  bottom: 12px;
+  width: 160px;
+  height: 164px;
+  opacity: var(--pad-alpha, 0.84);
+  transform: scale(var(--pad-scale, 1));
+  transform-origin: right bottom;
+}
+
+.pad-button {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.86rem;
+  font-weight: 600;
+  pointer-events: auto;
+  touch-action: none;
+  box-shadow: 0 4px 0 rgba(20, 8, 2, 0.4);
+}
+
+.pad-button.down {
+  filter: brightness(1.15);
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(20, 8, 2, 0.4);
+}
+
+.pad-button.light {
+  left: 0;
+  bottom: 0;
+  width: 72px;
+  height: 72px;
+  background: var(--straw);
+  color: var(--ink);
+}
+
+.pad-button.heavy {
+  left: 86px;
+  bottom: 22px;
+  width: 72px;
+  height: 72px;
+  background: var(--barn);
+  color: var(--cream);
+}
+
+.pad-button.special {
+  left: 24px;
+  bottom: 86px;
+  width: 62px;
+  height: 62px;
+  font-size: 0.76rem;
+  background: var(--leaf);
+  color: var(--cream);
+}
+
+.pad-button.sup {
+  left: 100px;
+  bottom: 106px;
+  width: 56px;
+  height: 56px;
+  font-size: 0.8rem;
+  background: rgba(43, 26, 18, 0.8);
+  color: rgba(255, 246, 227, 0.45);
+  box-shadow: inset 0 0 0 2px rgba(255, 246, 227, 0.22);
+}
+
+.crow-ready .pad-button.sup {
+  background: var(--straw);
+  color: var(--ink);
+  opacity: 1;
+  box-shadow: 0 4px 0 var(--straw-deep), 0 0 0 4px rgba(240, 194, 79, 0.35);
+  animation: crow-pulse 0.45s ease-in-out infinite alternate;
+}
+
+@keyframes crow-pulse {
+  to {
+    box-shadow: 0 4px 0 var(--straw-deep), 0 0 0 9px rgba(240, 194, 79, 0.12);
+  }
+}
+
+[data-hand="left"] .stick {
+  transform-origin: right bottom;
+  left: auto;
+  right: max(14px, env(safe-area-inset-right, 0px));
+}
+
+[data-hand="left"] .pad {
+  transform-origin: left bottom;
+  right: auto;
+  left: max(12px, env(safe-area-inset-left, 0px));
+}
+
+/* Phone held upright: the arena sits on top and the controls get a panel of their own. */
+@media (orientation: portrait) {
+  .fight.with-touch .arena {
+    flex: 0 0 auto;
+    height: 88vw;
+    max-height: 60%;
+  }
+  .fight.with-touch .touch-controls {
+    position: relative;
+    inset: auto;
+    flex: 1;
+    min-height: 190px;
+    background: radial-gradient(circle at 50% 0%, var(--table) 0%, var(--table-deep) 85%);
+  }
+  .fight.with-touch .stick {
+    left: 6%;
+    top: 50%;
+    bottom: auto;
+    width: 150px;
+    height: 150px;
+    margin-top: -75px;
+    transform-origin: left center;
+  }
+  .fight.with-touch .pad {
+    right: 5%;
+    top: 50%;
+    bottom: auto;
+    margin-top: -82px;
+    transform-origin: right center;
+  }
+  [data-hand="left"] .fight.with-touch .stick {
+    left: auto;
+    right: 6%;
+  }
+  [data-hand="left"] .fight.with-touch .pad {
+    right: auto;
+    left: 5%;
+  }
+}
+
+/* A floating stick: the whole near side of the screen is its catchment, and it comes to the thumb. */
+.stick-zone {
+  display: contents;
+}
+
+.stick-zone.floating {
+  display: block;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 46%;
+  height: 74%;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+[data-hand="left"] .stick-zone.floating {
+  left: auto;
+  right: 0;
+}
+
+.touch-controls .stick-zone .stick.held {
+  right: auto;
+  bottom: auto;
+  margin: 0;
+  translate: none;
+  transform-origin: center;
+}
+
+@media (orientation: portrait) {
+  .fight.with-touch .stick-zone.floating {
+    top: 0;
+    bottom: auto;
+    width: 50%;
+    height: 100%;
+  }
+}
+
+/* Dragged positions from the layout editor. */
+.stick {
+  translate: var(--stick-x, 0px) var(--stick-y, 0px);
+}
+
+.pad-button.light {
+  translate: var(--light-x, 0px) var(--light-y, 0px);
+}
+
+.pad-button.heavy {
+  translate: var(--heavy-x, 0px) var(--heavy-y, 0px);
+}
+
+.pad-button.special {
+  translate: var(--special-x, 0px) var(--special-y, 0px);
+}
+
+.pad-button.sup {
+  translate: var(--sup-x, 0px) var(--sup-y, 0px);
+}
+
+.pad-button.block {
+  left: -42px;
+  bottom: 82px;
+  width: 56px;
+  height: 56px;
+  font-size: 0.76rem;
+  background: #cfe6f0;
+  color: var(--ink);
+  translate: var(--block-x, 0px) var(--block-y, 0px);
+}
+
+[data-hand="left"] .pad-button.block {
+  left: auto;
+  right: -42px;
+}
+
+.fight.duo .stick,
+.fight.duo .pad-button {
+  translate: none;
+}
+
+.fight.arranging {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: var(--table-deep);
+}
+
+.touch-controls.editing .stick,
+.touch-controls.editing .pad-button {
+  outline: 2px dashed rgba(255, 246, 227, 0.75);
+  outline-offset: 3px;
+  cursor: grab;
+}
+
+.editor-note {
+  padding: 1rem 1.2rem;
+  text-align: center;
+  align-items: flex-start;
+}
+
+.editor-note h2 {
+  margin: 0;
+  color: var(--straw);
+}
+
+.editor-note p {
+  margin: 0.4rem auto 0;
+  max-width: 34ch;
+  line-height: 1.35;
+}
+
+/* Two players on one screen: a compact set of controls in each bottom corner. */
+.fight.duo .touch-controls {
+  position: absolute;
+  inset: auto;
+  bottom: 8px;
+  flex: none;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  background: none;
+  transform: scale(var(--duo, 1));
+}
+
+.fight.duo .touch-controls.p0 {
+  left: max(8px, env(safe-area-inset-left, 0px));
+  transform-origin: left bottom;
+}
+
+.fight.duo .touch-controls.p1 {
+  right: max(8px, env(safe-area-inset-right, 0px));
+  transform-origin: right bottom;
+}
+
+.fight.duo .touch-controls .stick,
+.fight.duo .touch-controls .pad {
+  position: relative;
+  inset: auto;
+  width: 136px;
+  margin: 0;
+  transform: none;
+}
+
+.fight.duo .touch-controls .stick {
+  height: 136px;
+}
+
+.fight.duo .touch-controls .pad {
+  width: 160px;
+}
+
+@media (orientation: landscape) {
+  .fight.duo .arena {
+    align-items: flex-start;
+  }
+}
+
+.fight.duo .pause-button {
+  bottom: calc(150px * var(--duo, 1) + 18px);
+}
+
+/* A phone held upright has room to spare under the arena: the fighter's specials go there. */
+.move-strip {
+  display: none;
+}
+@media (orientation: portrait) {
+  .fight.with-touch .move-strip {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.1rem 0.9rem;
+    margin: 0;
+    padding: 0.45rem 0.7rem 0.3rem;
+    list-style: none;
+    font-size: 0.72rem;
+    background: var(--table);
+  }
+  .move-strip b {
+    font-weight: 600;
+    color: var(--straw);
+  }
+}
+
+/* Half a meter: the Crow button wakes up. */
+.crow-half .pad-button.sup {
+  color: var(--cream);
+  box-shadow: inset 0 0 0 2px var(--straw);
+}
+
+/* Two players on a phone held upright: one full-size set above the other, each labelled, rather than two shrunk side by side. */
+.fight.duo .touch-controls::before {
+  content: "Player 1";
+  position: absolute;
+  left: 4px;
+  top: -1.2rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--straw);
+}
+.fight.duo .touch-controls.p1::before {
+  content: "Player 2";
+}
+@media (orientation: portrait) {
+  .fight.duo .touch-controls {
+    left: 50%;
+    right: auto;
+    translate: -50% 0;
+    transform: scale(var(--duo-tall, 1));
+    transform-origin: center bottom;
+  }
+  .fight.duo .touch-controls.p0 {
+    left: 50%;
+  }
+  .fight.duo .touch-controls.p1 {
+    right: auto;
+    bottom: calc(196px * var(--duo-tall, 1) + 16px);
+  }
+  .fight.duo .pause-button {
+    left: auto;
+    right: 10px;
+    bottom: auto;
+    top: calc(88vw + 8px);
+    margin: 0;
+  }
+}
+
+.editor-back {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: 0.6em 0.7em;
+}

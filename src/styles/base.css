@@ -1,0 +1,221 @@
+/* Palette, type and the things every screen shares: buttons, chips, the update notice. */
+
+/* Barn-brown table, straw buttons, cream text: the same world as Exploding Chickens. */
+/* Fredoka travels with the app (SIL Open Font License, see assets/Fredoka-OFL.txt), so it is there offline too. */
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("../assets/fredoka-latin-wght.woff2") format("woff2");
+}
+
+:root {
+  color-scheme: light dark;
+  --table: #5a3421;
+  --table-deep: #3f2316;
+  --straw: #f0c24f;
+  --straw-deep: #c99a2a;
+  --cream: #fff6e3;
+  --ink: #2b1a12;
+  --barn: #b5392c;
+  --barn-deep: #7d2a22;
+  --leaf: #2f8f6f;
+  --leaf-deep: #1f6b52;
+  --panel: rgba(20, 8, 2, 0.26);
+  --font: "Fredoka", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --table: #45271a;
+    --table-deep: #2c1710;
+  }
+}
+
+:root[data-theme="dark"] {
+  --table: #45271a;
+  --table-deep: #2c1710;
+}
+
+html {
+  scroll-padding-top: env(safe-area-inset-top, 0px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--cream);
+  background: var(--table-deep);
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(circle at 50% 30%, var(--table) 0%, var(--table-deep) 80%);
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.7em 1.3em;
+  font-weight: 600;
+  background: var(--straw);
+  color: var(--ink);
+  box-shadow: 0 3px 0 var(--straw-deep);
+  transition: transform 0.08s ease;
+  touch-action: manipulation;
+}
+
+button:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--straw-deep);
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--cream);
+  box-shadow: inset 0 0 0 2px rgba(255, 246, 227, 0.4);
+}
+
+button.link {
+  background: none;
+  box-shadow: none;
+  color: var(--cream);
+  padding: 0.4em 0.5em;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  font-weight: 500;
+}
+
+button.big {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.25rem;
+  padding: 0.6em 1.2em 0.65em;
+  border-radius: 20px;
+}
+
+button.big small {
+  font-size: 0.8rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+:focus-visible {
+  outline: 3px solid var(--cream);
+  outline-offset: 2px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chips-label {
+  align-self: center;
+  margin-right: 0.2rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.chip {
+  padding: 0.42em 0.95em;
+  font-size: 0.9rem;
+  background: transparent;
+  color: var(--cream);
+  box-shadow: inset 0 0 0 2px rgba(255, 246, 227, 0.35);
+}
+
+.chip.on {
+  background: var(--straw);
+  color: var(--ink);
+  box-shadow: 0 3px 0 var(--straw-deep);
+}
+
+.fine {
+  margin: 0;
+  font-size: 0.82rem;
+  opacity: 0.72;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: max-content;
+  max-width: calc(100% - 1.5rem);
+  padding: 0.5rem 0.6rem 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  background: var(--ink);
+  box-shadow: 0 8px 20px rgba(20, 8, 2, 0.5);
+}
+
+.toast button {
+  padding: 0.35em 0.9em;
+}
+
+/* Steering with a gamepad: always show where the focus is. */
+[data-pad] :focus {
+  outline: 3px solid var(--cream);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+[data-motion="reduced"] *,
+[data-motion="reduced"] *::before {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Read out by screen readers, not shown. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
