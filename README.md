@@ -6,10 +6,11 @@ A barnyard fighting game. Peck, kick and crow your way to the top.
 
 ## Features
 
-- **Eight fighters and a boss**, each with three specials, a super and a breed trait (hens flutter, roosters hop further, chicks scurry).
+- **Nine fighters and a boss**, each with three specials, a super and a breed trait (hens flutter, roosters hop further, chicks scurry).
 - **Modes:** Story, Arcade, Survival, Time attack, Boss rush, Tournament, Tag team, Versus, a Daily challenge, and Training with combo trials.
 - **Online play** with a friend by invite code: peer to peer over WebRTC with rollback netcode, no server needed.
 - **Replays** you can share as a code, or take over and play out yourself.
+- **Achievements**, 29 of them, kept on the device and listed under More.
 - **Made for phones:** touch controls you can move and resize, portrait and landscape, installable and works offline. Keyboards and gamepads work too.
 - **No assets:** the chickens and arenas are drawn with canvas paths, and all music and sound is synthesized live.
 
@@ -42,4 +43,4 @@ The code is in three layers, each depending only on the one before it:
 - `src/render/`: canvas drawing of the chickens, arenas and effects.
 - `src/ui/`: React screens, settings and input devices.
 
-Fighters are data in `src/game/roster.ts`, and the story script is in `src/story.ts`. `golden.test.ts` fingerprints the engine's behaviour, so a refactor must leave it untouched.
+Fighters are data in `src/game/roster.ts`, the story script is in `src/story.ts`, and achievements are in `src/achievements.ts`. `npm run balance` plays the roster against itself, CPU against CPU, as a guide when tuning a fighter. `golden.test.ts` fingerprints the engine's behaviour, so a refactor must leave it untouched.

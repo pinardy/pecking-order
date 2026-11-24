@@ -70,9 +70,25 @@ export function shotRange(spec: ShotSpec): number {
   return spec.vx * (spec.life ?? 400);
 }
 
-/** Every box in play, for the training overlay. */
-export function debugBoxes(m: Match): { hurt: Rect[]; attack: Rect[]; shots: Rect[] } {
+/**
+ * Every box in play, for the training overlay. `hurt` can be hit this tick; `safe` cannot (getting up,
+ * mid-roll, the untouchable start of a move). `grab` is how far a command throw reaches: it catches
+ * a standing opponent whose own box touches it when the wind-up ends.
+ */
+export function debugBoxes(m: Match): { hurt: Rect[]; safe: Rect[]; attack: Rect[]; grab: Rect[]; shots: Rect[] } {
+  const hurt: Rect[] = [];
+  const safe: Rect[] = [];
   const attack: Rect[] = [];
-  for (const f of m.f) if (f.state === "attack" && f.move?.box && f.phase === "active") attack.push(attackRect(f, f.move.box, newRect()));
-  return { hurt: m.f.map((f) => hurtRect(f, newRect())), attack, shots: m.shots.filter((s) => s.delay === 0).map((s) => shotRect(s, newRect())) };
+  const grab: Rect[] = [];
+  for (const f of m.f) {
+    (hittable(f) ? hurt : safe).push(hurtRect(f, newRect()));
+    const mv = f.state === "attack" ? f.move : null;
+    if (!mv) continue;
+    if (mv.box && f.phase === "active") attack.push(attackRect(f, mv.box, newRect()));
+    if (mv.grab !== undefined && f.phase !== "recovery") {
+      const front = f.def.width / 2;
+      grab.push(attackRect(f, { x0: front, x1: front + mv.grab, y0: 0, y1: f.def.height * 0.6 }, newRect()));
+    }
+  }
+  return { hurt, safe, attack, grab, shots: m.shots.filter((s) => s.delay === 0).map((s) => shotRect(s, newRect())) };
 }

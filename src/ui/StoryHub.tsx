@@ -1,10 +1,10 @@
 import type { Run } from "../arcade";
-import { fighterById } from "../game";
+import { ROSTER, fighterById } from "../game";
 import type { Stats } from "./stats";
 import { useEscape } from "./useEscape";
 
-/** One ending for each of the eight fighters, and one for Old Spur. */
-const TOTAL_ENDINGS = 9;
+/** One ending for each fighter on the roster, and one for Old Spur. */
+const TOTAL_ENDINGS = ROSTER.length + 1;
 
 interface Props {
   stats: Stats;

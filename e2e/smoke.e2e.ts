@@ -517,7 +517,7 @@ test("a finished story leaves its ending to be watched again", async ({ page }) 
   });
   const errors = await open(page);
   await page.getByRole("button", { name: /^Story/ }).click();
-  await expect(page.getByText("Endings: 1 of 9")).toBeVisible();
+  await expect(page.getByText("Endings: 1 of 10")).toBeVisible();
   await page.locator(".chips").getByRole("button", { name: "Rusty" }).click();
   // Old Spur gives way, then the narrator tells how it ended, and Rusty has the last word.
   const box = page.locator(".dialogue");
@@ -669,7 +669,7 @@ test("boss rush: unlocked by finishing a story; everyone in a row, then the top"
   await page.getByRole("button", { name: /^Boss rush/ }).click();
   await page.getByRole("option", { name: "Pip" }).click();
   await page.getByRole("button", { name: "Choose Pip" }).click();
-  await expect(page.locator(".caption")).toHaveText("Boss rush: fight 1 of 8");
+  await expect(page.locator(".caption")).toHaveText("Boss rush: fight 1 of 9");
   await expect(fight(page)).toBeVisible({ timeout: 10_000 });
   expect(errors).toEqual([]);
 });
@@ -694,5 +694,62 @@ test("a replay can be taken over from the pause menu, and the big calls are read
   // Taken over: it is not a replay any more, so the pause menu has the usual way out.
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "Take over from here" })).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("the ninth fighter: Pepper has moves of her own, and a rival fight with a rule of its own", async ({ page }) => {
+  await page.addInitScript(() => {
+    if (!localStorage.getItem("po-story")) localStorage.setItem("po-story", JSON.stringify({ v: 1, p1: "pepper", ladder: ["dot", "pip", "goldie", "henrietta", "oldspur"], rung: 3, level: 1, score: 0, bonus: false }));
+  });
+  const errors = await open(page);
+  // Nine fighters, five across, and her kit can be previewed like anyone's.
+  await page.getByRole("button", { name: "Training" }).click();
+  await expect(page.getByRole("option")).toHaveCount(9);
+  await page.getByRole("option", { name: "Pepper" }).click();
+  await page.getByRole("button", { name: "Hot foot" }).click();
+  await expect(page.locator("canvas.move-preview")).toBeVisible();
+  await page.getByRole("button", { name: "Choose Pepper" }).click();
+  await page.getByRole("button", { name: /^Choose/ }).click();
+  await expect(fight(page)).toBeVisible();
+  // Her story's fourth fight is Henrietta, who keeps the list she is not on.
+  await page.goto("/");
+  await page.getByRole("button", { name: /^Story/ }).click();
+  await page.getByRole("button", { name: /^Continue story/ }).click();
+  await expect(page.locator(".dialogue")).toBeVisible();
+  await page.getByRole("button", { name: "Skip" }).click();
+  await expect(page.locator(".caption")).toHaveText("Fight 4 of 5: your rival");
+  await expect(page.locator(".versus")).toContainText("Flash in the pan: one round settles it");
+  expect(errors).toEqual([]);
+});
+
+test("achievements: what was done before counts, the list shows how far along the rest are, and a finished match earns one", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.addInitScript(() => {
+    if (!localStorage.getItem("po-stats")) localStorage.setItem("po-stats", JSON.stringify({ v: 2, fights: 22, wins: 14, bestStreak: 6, cleared: ["pip"], clears: [0, 1, 0, 0], fighters: { pip: { fights: 22, wins: 14 } } }));
+  });
+  // ?auto (development only) has a CPU play player 1; with two players chosen, nobody plays player 2.
+  const errors = await open(page, { rounds: 1 }, "/?auto&speed=10");
+  await page.getByRole("button", { name: "More" }).click();
+  await page.getByRole("button", { name: "Achievements: 3 of 29 earned" }).click();
+  const list = page.getByRole("dialog", { name: "Achievements" });
+  await expect(list.locator("li.done")).toHaveCount(3);
+  await expect(list.locator("li", { hasText: "First peck" })).toContainText("Earned");
+  await expect(list.locator("li", { hasText: "Cock of the walk" })).toContainText("6 of 10");
+  await expect(list.locator("li", { hasText: "Flock leader" })).toContainText("1 of 9");
+  await expect(list.locator("li", { hasText: "Hard-boiled" })).toContainText("Not yet");
+  await page.getByRole("button", { name: "Close" }).click();
+  // A match against a second player, played to the end: its achievement is announced on the result screen, and kept.
+  await page.getByRole("button", { name: "Versus" }).click();
+  await page.getByRole("radio", { name: "2 players" }).click();
+  await page.getByRole("button", { name: /^Choose/ }).click();
+  await page.getByRole("button", { name: /^Choose/ }).click();
+  await page.locator(".versus").click();
+  await expect(page.locator(".result h1")).toBeVisible({ timeout: 150_000 });
+  await expect(page.locator(".toast.earned")).toContainText("Achievement: Pecking rights");
+  await page.locator(".toast.earned").getByRole("button", { name: "OK" }).click();
+  await expect(page.locator(".toast.earned")).toHaveCount(0);
+  await page.goto("/");
+  await page.getByRole("button", { name: "More" }).click();
+  await expect(page.getByRole("button", { name: "Achievements: 4 of 29 earned" })).toBeVisible();
   expect(errors).toEqual([]);
 });

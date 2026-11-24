@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RIVALS, afterBonus, afterFight, isFinal, nextStep, rivalAt, startRun, type Run } from "./arcade";
+import { ONE_WAY_RIVALS, RIVALS, afterBonus, afterFight, isFinal, nextStep, rivalAt, startRun, type Run } from "./arcade";
 import { ROSTER, fighterById } from "./game";
 
 /** Wins every fight, noting each step on the way up. */
@@ -38,8 +38,8 @@ describe("arcade ladder", () => {
         expect(run.ladder[3]).toBe(RIVALS[player.id]);
         expect(rivalAt(run, 3)).toBe(RIVALS[player.id]);
         expect(rivalAt(run, 2)).toBeNull();
-        // And rivalry runs both ways.
-        expect(RIVALS[RIVALS[player.id]]).toBe(player.id);
+        // And rivalry runs both ways, except for the newcomer, who picked hers without being asked.
+        if (!ONE_WAY_RIVALS.includes(player.id)) expect(RIVALS[RIVALS[player.id]]).toBe(player.id);
       }
     }
   });

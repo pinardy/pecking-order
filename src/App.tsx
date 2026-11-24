@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { ACHIEVEMENTS, newlyEarned, type Achievement, type Feat } from "./achievements";
 import { afterBonus, afterFight, isFinal, nextStep, rivalAt, startRun, type Run } from "./arcade";
 import { dailyFor, type Daily } from "./daily";
 import { startMusic, stopMusic } from "./music";
 import { afterBonusScene, aftermathScene, between, defeat, ending, finale, opening, resumed, twistFor, type Choice, type Scene } from "./story";
+import { AchievementsSheet, EarnedToast } from "./ui/Achievements";
 import { Chapters } from "./ui/Chapters";
 import { StoryHub } from "./ui/StoryHub";
 import { Cutscene } from "./ui/Cutscene";
@@ -22,7 +24,7 @@ import { Result } from "./ui/Result";
 import { Select } from "./ui/Select";
 import { SettingsModal } from "./ui/SettingsModal";
 import { LEVEL_NAMES, SettingsProvider, useSettings } from "./ui/settings";
-import { loadRun, loadStats, recordClear, recordDaily, recordFight, recordBossRush, recordChapter, recordScore, recordStory, recordSurvival, recordTimeAttack, saveRun } from "./ui/stats";
+import { loadEarned, loadRun, loadStats, saveEarned, recordClear, recordDaily, recordFight, recordBossRush, recordChapter, recordScore, recordStory, recordSurvival, recordTimeAttack, saveRun } from "./ui/stats";
 import { Title, type Mode } from "./ui/Title";
 import { Tournament } from "./ui/Tournament";
 import { Versus } from "./ui/Versus";
@@ -152,6 +154,18 @@ function boutFor(run: Run): Bout {
   return { mode: run.story ? "story" : "arcade", p1, p2: step.opponent, cpu: step.cpu, stage: step.stage, run, alts, extraRules: { ...boss, ...twist?.rules }, maxSep: twist?.maxSep, twist: twist?.label };
 }
 
+/** A finished match as achievements see it. Player 1 is the person at this device. */
+function featOf(b: Bout, r: FightResult): Feat {
+  const mine = r.stats?.sides[0];
+  return {
+    mode: b.mode, won: r.winner === 0, fighter: b.p1.id, opponent: b.p2.id,
+    // The scarecrow is nobody: its round counts for the bonus only.
+    cpu: b.mode === "bonus" ? null : b.cpu,
+    health: r.hp / b.p1.hp, perfect: r.points.perfect > 0, smashed: b.mode === "bonus" && r.points.bonus > 0,
+    bestCombo: mine?.bestCombo ?? 0, throws: mine?.throws ?? 0, counters: mine?.counters ?? 0,
+  };
+}
+
 let fightCount = 0;
 
 function Game() {
@@ -160,11 +174,27 @@ function Game() {
   const [stats, setStats] = useState(loadStats);
   const [run, setRun] = useState(() => loadRun(false));
   const [story, setStory] = useState(() => loadRun(true));
-  const [sheet, setSheet] = useState<"howto" | "settings" | "arrange" | "replays" | null>(null);
+  const [sheet, setSheet] = useState<"howto" | "settings" | "arrange" | "replays" | "achievements" | null>(null);
+  // Achievements: what is held (anything the record already earns is granted quietly at start-up), and those just earned, waiting to be shown.
+  const [earned, setEarned] = useState(() => {
+    const held = loadEarned();
+    const late = newlyEarned(held, loadStats(), null);
+    return late.length ? saveEarned(late.map((a) => a.id)) : held;
+  });
+  const [fresh, setFresh] = useState<Achievement[]>([]);
+  /** Checks the record as it now stands, and this match if there was one, for anything newly earned. */
+  const celebrate = (feat: Feat | null) => {
+    const now = loadStats();
+    setStats(now);
+    const won = newlyEarned(loadEarned(), now, feat);
+    if (!won.length) return;
+    setEarned(saveEarned(won.map((a) => a.id)));
+    setFresh((list) => [...list, ...won]);
+  };
   // The replay sheet for the match just played: what to play, and where to come back to afterwards.
   const [sharing, setSharing] = useState<{ replay: Replay; labels: [string, string]; back: Screen } | null>(null);
   const install = useInstallPrompt();
-  const [fresh, dismissFresh] = useUpdateNotice();
+  const [newVersion, dismissUpdate] = useUpdateNotice();
   // For handlers that outlive a render: where the player is now, and whether the spare history entry is in place.
   const where = useRef({ screen, sheet });
   where.current = { screen, sheet };
@@ -264,7 +294,12 @@ function Game() {
     else announce(bout);
   };
 
+  /** A match is over: settle it (records, the run, where to go next), then see what it earned. */
   const finish = (bout: Bout, result: FightResult) => {
+    settle(bout, result);
+    celebrate(featOf(bout, result));
+  };
+  const settle = (bout: Bout, result: FightResult) => {
     // The bonus round only adds to the score; the ladder carries straight on.
     // A chapter played again: its aftermath (or ending) if won, the winner's word if lost, then back to the chapters.
     if (bout.run?.chapter) {
@@ -341,6 +376,8 @@ function Game() {
           onTournament={() => setScreen({ name: "tournament" })}
           onHowTo={() => setSheet("howto")}
           onSettings={() => setSheet("settings")}
+          achievements={`${ACHIEVEMENTS.filter((a) => a.id in earned).length} of ${ACHIEVEMENTS.length}`}
+          onAchievements={() => setSheet("achievements")}
         />
       );
       break;
@@ -383,7 +420,7 @@ function Game() {
       view = <Tournament onExit={toTitle} />;
       break;
     case "online":
-      view = <Online invite={screen.invite} onExit={toTitle} />;
+      view = <Online invite={screen.invite} onExit={toTitle} onMatch={(feat) => celebrate(feat)} />;
       break;
     case "tutorial":
       view = (
@@ -557,13 +594,17 @@ function Game() {
           }}
         />
       )}
-      {fresh && !inFight && (
+      {sheet === "achievements" && <AchievementsSheet earned={earned} stats={stats} onClose={() => setSheet(null)} />}
+      {/* One notice at a time along the bottom: achievements first, then word of a new version. */}
+      {fresh.length > 0 && !inFight ? (
+        <EarnedToast achievement={fresh[0]} onDone={() => setFresh((list) => list.slice(1))} />
+      ) : newVersion && !inFight ? (
         <div className="toast" role="status">
           A new version is ready.
           <button type="button" onClick={() => location.reload()}>Reload</button>
-          <button type="button" className="link" onClick={dismissFresh}>Later</button>
+          <button type="button" className="link" onClick={dismissUpdate}>Later</button>
         </div>
-      )}
+      ) : null}
     </>
   );
 }

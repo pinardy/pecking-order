@@ -277,3 +277,60 @@
   margin: -0.3rem -0.4rem;
   padding: 0.6em 0.7em;
 }
+
+/* Achievements: a star, the name over how it is earned, and where it stands. */
+.achievements {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.achievements li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 14px;
+  background: var(--panel);
+  opacity: 0.72;
+}
+.achievements li.done {
+  opacity: 1;
+}
+.achievements li > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.achievements small,
+.toast.earned small {
+  display: block;
+  font-size: 0.78rem;
+  opacity: 0.75;
+}
+.achievements em {
+  flex: none;
+  font-style: normal;
+  font-size: 0.78rem;
+  text-align: right;
+  opacity: 0.8;
+}
+.achievements .mark,
+.toast.earned .mark {
+  flex: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--straw);
+}
+.achievements li:not(.done) .mark {
+  color: inherit;
+  opacity: 0.5;
+}
+
+/* The notice for one just earned: two lines of text, so a rounded box rather than a pill. */
+.toast.earned {
+  border-radius: 18px;
+  padding: 0.6rem 0.7rem 0.6rem 0.9rem;
+  line-height: 1.25;
+}

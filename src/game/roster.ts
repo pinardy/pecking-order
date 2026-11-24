@@ -2,7 +2,7 @@ import type { Box, Breed, FighterDef, Look, Move, Palette, PoseKey, ShotSpec } f
 import { BARN, BARN_DEEP, CARROT, CREAM, CREAM_DEEP, INK, LEAF, STRAW, STRAW_DEEP } from "../palette";
 
 // Every fighter is data. Normals are generated from the fighter's size, reach and power so
-// all six share one set of timings; the three specials and the super are what set them apart.
+// all of them share one set of timings; the three specials and the super are what set them apart.
 
 interface Dims {
   width: number;
@@ -369,6 +369,31 @@ export const ROSTER: FighterDef[] = [
         rising("stagedive", "Stage dive", d, { startup: 5, vx: 2.6, vy: 12.4, damage: 92, recovery: 20 }),
       ],
       super: projectile("encore", "Encore", { kind: "quill", at: 10, vx: 8, vy: 0.5, g: 0, damage: 50, y: d.height * 0.55, size: 16, level: "mid", count: 6, spread: 0.3, every: 4 }, 26, "super", { invuln: 14 }),
+    }),
+  }),
+  // The ninth bird. New fighters go on the end: the golden test plays the first eight by position.
+  build({
+    id: "pepper", name: "Pepper", breed: "chick", tagline: "Hatched in the chilli patch",
+    hp: 1080, speed: 3.7, jump: 13.2, power: 1.06, reach: 0.98,
+    colors: { body: "#dc5038", belly: "#bd3d2b", wing: "#c5432f", comb: LEAF, beak: STRAW, leg: STRAW_DEEP, tail: "#bd3d2b", eye: INK },
+    look: { comb: 0, wattle: 0, tail: "none" },
+    quotes: ["Mild? Say mild again.", "That’s the thing about heat. It builds."],
+    ending: "Pepper stopped being called mild. Mostly because nobody wanted to find out twice.",
+    ender: "hotfoot",
+    style: "Mix-ups. Slides in under a standing guard, or hugs you through a crouching one.",
+    ease: 3,
+    plan: "rush",
+    normals: (n) => ({ cHeavy: { ...n.cHeavy, name: "Ankle nip", startup: 7 } }),
+    kit: (d) => ({
+      air: dive("flashfry", "Flash fry", d, { vx: 6, vy: 8, damage: 72 }),
+      specials: [
+        // A slow cloud that does not go far: something to walk in behind.
+        projectile("sneeze", "Sneeze", { kind: "pepper", at: 10, vx: 3, vy: 0, g: 0, damage: 42, y: d.height * 0.55, size: 22, level: "mid", hits: 2, life: 54 }, 15),
+        // The only rush that has to be blocked crouching, and low enough to pass under most shots.
+        dash("hotfoot", "Hot foot", d, { startup: 8, active: 11, recovery: 18, speed: 8.4, damage: 96, pose: "sweep" }, "special", { level: "low", box: box(0, d.width * 0.5 + 24, 0, d.height * 0.42), knock: { x: 3.6, y: 6.5 } }),
+        hug("clinch", "Chilli clinch", d, { startup: 7, damage: 140, recovery: 26, reach: 22 }),
+      ],
+      super: projectile("fivealarm", "Five-alarm sneeze", { kind: "pepper", at: 9, vx: 4.4, vy: 0, g: 0, damage: 58, y: d.height * 0.6, size: 40, level: "mid", hits: 5, life: 64, knock: { x: 6, y: 8 } }, 30, "super", { invuln: 14 }),
     }),
   }),
 ];

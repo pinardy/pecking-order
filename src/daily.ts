@@ -41,7 +41,7 @@ export function dailyFor(day: Date): Daily {
   let h = 2166136261;
   for (let i = 0; i < date.length; i++) h = Math.imul(h ^ date.charCodeAt(i), 16777619) >>> 0;
   const you = h % ROSTER.length;
-  // Never yourself: step on by one to seven places.
+  // Never yourself: step on by at least one place, and by fewer than the whole roster.
   const them = (you + 1 + ((h >>> 5) % (ROSTER.length - 1))) % ROSTER.length;
   return { date, you: ROSTER[you], them: ROSTER[them], stage: (h >>> 9) % 4, twist: TWISTS[(h >>> 12) % TWISTS.length] };
 }
