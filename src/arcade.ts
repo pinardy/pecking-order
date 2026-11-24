@@ -36,21 +36,26 @@ export type Step =
   | { kind: "bonus" }
   | { kind: "fight"; opponent: FighterDef; cpu: CpuLevel; stage: number; final: boolean };
 
-/** A new run: four of the others in a random order, then Old Spur. */
 /**
  * Everyone has a rival: the one bird in the yard they cannot leave alone. The rival is always the
  * fourth fight, the last before the top. (Old Spur's is Duke, who is waiting for him at the end instead.)
+ * The first eight are rivals in pairs. Pepper, the newcomer, has picked hers on her own: it runs one way.
  */
 export const RIVALS: Record<string, string> = {
   henrietta: "dot", dot: "henrietta",
   rusty: "ziggy", ziggy: "rusty",
   pip: "duke", duke: "pip",
   shelly: "goldie", goldie: "shelly",
+  pepper: "henrietta",
 };
+
+/** Fighters whose rivalry is not returned. */
+export const ONE_WAY_RIVALS: readonly string[] = ["pepper"];
 
 /** The run's rival, if the fight at this rung is against them. */
 export const rivalAt = (run: Run, rung = run.rung): string | null => (rung === LADDER_FIGHTS - 2 && run.ladder[rung] === RIVALS[run.p1] ? run.ladder[rung] : null);
 
+/** A new run: three of the others in a random order, then the rival, then Old Spur. */
 export function startRun(player: FighterDef, level: CpuLevel, random: () => number = Math.random): Run {
   // Old Spur, playing arcade himself, finds Duke waiting at the top instead.
   const boss = player.id === BOSS.id ? "duke" : BOSS.id;

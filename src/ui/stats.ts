@@ -1,5 +1,5 @@
 import type { Run } from "../arcade";
-import { isDayBefore } from "../daily";
+import { dayKey, isDayBefore } from "../daily";
 import { fighterById } from "../game";
 import { read, remove, write } from "./store";
 
@@ -34,9 +34,10 @@ export interface Stats {
 }
 
 const VERSION = 2;
-const empty = (): Stats => ({ fights: 0, wins: 0, clears: [0, 0, 0, 0], streak: 0, bestStreak: 0, best: 0, survival: 0, timeAttack: 0, fighters: {}, cleared: [], stories: [], chapters: {}, bossRush: { best: 0, cleared: false }, daily: { last: "", streak: 0 } });
+/** The record of a device nothing has been played on. */
+export const emptyStats = (): Stats => ({ fights: 0, wins: 0, clears: [0, 0, 0, 0], streak: 0, bestStreak: 0, best: 0, survival: 0, timeAttack: 0, fighters: {}, cleared: [], stories: [], chapters: {}, bossRush: { best: 0, cleared: false }, daily: { last: "", streak: 0 } });
 
-export const loadStats = (): Stats => read("stats", VERSION, empty());
+export const loadStats = (): Stats => read("stats", VERSION, emptyStats());
 const save = (s: Stats) => void write("stats", VERSION, s);
 
 function change(edit: (s: Stats) => void): Stats {
@@ -93,6 +94,19 @@ export const recordStory = (fighter: string) =>
   change((s) => {
     if (!s.stories.includes(fighter)) s.stories.push(fighter);
   });
+
+// Achievements earned on this device, each with the day it was earned (YYYY-MM-DD). What earns them is in achievements.ts.
+const NO_ACHIEVEMENTS = { got: {} as Record<string, string> };
+
+export const loadEarned = (): Record<string, string> => ({ ...read("achievements", 1, NO_ACHIEVEMENTS).got });
+
+/** Marks these as earned today, and returns everything earned so far. */
+export function saveEarned(ids: string[], today = dayKey(new Date())): Record<string, string> {
+  const got = loadEarned();
+  for (const id of ids) got[id] ??= today;
+  write("achievements", 1, { got });
+  return got;
+}
 
 // A climb in progress (arcade or story, each in a slot of its own) is saved after every fight,
 // so closing the app does not lose it.

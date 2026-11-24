@@ -31,6 +31,9 @@ interface Props {
   onTournament: () => void;
   onHowTo: () => void;
   onSettings: () => void;
+  /** How many achievements are held, as "7 of 29". */
+  achievements: string;
+  onAchievements: () => void;
 }
 
 /** The record on this device: the headline figure for the title screen, and the rest for the More sheet. */
@@ -50,7 +53,7 @@ function tally(s: Stats): { headline: string; rest: string[] } {
  * The title screen keeps to the things most visits start with: arcade, the three everyday
  * modes and today's challenge. Everything else is one tap away under More.
  */
-export function Title({ stats, run, story, onContinueStory, nudge, daily, dailyDone, advanced, onMode, onDaily, onAdvanced, onReplays, onContinue, onTutorial, onOnline, onTournament, onHowTo, onSettings }: Props) {
+export function Title({ stats, run, story, onContinueStory, nudge, daily, dailyDone, advanced, onMode, onDaily, onAdvanced, onReplays, onContinue, onTutorial, onOnline, onTournament, onHowTo, onSettings, achievements, onAchievements }: Props) {
   const [more, setMore] = useState(false);
   const record = tally(stats);
   /** Closes the More sheet, then goes wherever was chosen. */
@@ -153,6 +156,10 @@ export function Title({ stats, run, story, onContinueStory, nudge, daily, dailyD
           <h3>Replays</h3>
           <div className="more-list">
             <button type="button" className="ghost" onClick={go(onReplays)}>Watch a replay from a code</button>
+          </div>
+          <h3>Records</h3>
+          <div className="more-list">
+            <button type="button" className="ghost" onClick={go(onAchievements)}>Achievements: {achievements} earned</button>
           </div>
           {record.rest.length > 0 && (
             <>

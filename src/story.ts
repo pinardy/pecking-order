@@ -373,6 +373,46 @@ const ARCS: Record<string, Arc> = {
     retorts: ["I’m the headliner here. You’re the warm-up. Warm-ish.", "Turn it down, chick. I’m up next.", "Is this the support act? Cute. Very cheep."],
     victory: ["Thank you! Thank you! I’ll be here all week!", "And that’s the encore. Mic drop. Wing drop.", "Somebody get that bird a stool. And some ice."],
   },
+  pepper: {
+    opening: [
+      ["me", "I hatched in the chilli patch. Nobody sat on me. The sun did it. Explains a lot, apparently."],
+      ["me", "So I’m not at the bottom of the pecking order. I’m not on it at all. Henrietta checked. Twice."],
+      ["spur", "A chick nobody has counted. Go home, little spark, before you burn yourself out."],
+      ["me", "I am home. That’s the problem. Put the kettle on, old timer. Things are about to get heated."],
+    ],
+    halfway: ["Halfway. Is it warm up here, or is it me? It’s me. It’s always me.", "They keep saying I’ll simmer down. I’ve never simmered in my life. I go straight to the boil."],
+    // Her rival is Henrietta, who keeps the list she is not on. (Henrietta’s own is still Dot.)
+    rival: [
+      ["them", "Stop there, please. Name?"],
+      ["me", "Pepper. You know it’s Pepper."],
+      ["them", "You are not on the list. I have checked the hens, the chicks and the miscellaneous."],
+      ["me", "I hatched in the chilli patch. Nobody wrote it down."],
+      ["them", "Then officially you have not hatched. I can offer you a form."],
+      ["me", "I’m standing right here! I’m two weeks old! I’m fully seasoned!"],
+      ["them", "Unregistered poultry may not use the ladder. It is in the rules. I wrote them."],
+      ["me", "Then write this down. Pepper. P, E, double P, and you’d better duck."],
+    ],
+    showdown: [
+      ["them", "The uncounted chick. I am told you are not on the list."],
+      ["me", "I’m not on anything. Not the list, not the rota, not the bottom rung."],
+      ["them", "Then where, precisely, do you think you stand?"],
+      ["me", "Nowhere. So I get to pick. I pick here."],
+      ["them", "This spot is taken, little spark."],
+      ["me", "I’m not a spark. I’m the whole chilli. Budge up, before it gets too hot in this henhouse."],
+    ],
+    epilogue: [
+      "Pepper took the top of the barn, and the pecking order had her name on it at last. At the top. In red.",
+      "Henrietta has entered her in the list. There was no column for her, so she was given a new one. It is headed ‘Handle with care’.",
+      "Nobody has called her mild since. One of the goats tried. He is expected to recover.",
+    ],
+    last: "Top of the list. I told you it was getting hot in here.",
+    meet: ["Go on. Say it.", "Say I look mild. I dare you. I double-dare you."],
+    comeback: "Ooh, that’s done it. Now I’m steaming.",
+    beaten: ["Ow. Okay. That one stung.", "I’m not cooling off. I’m resting my heat."],
+    beatenAsRival: ["Fine. You win. This once.", "I’m still not mild. Write that down."],
+    retorts: ["I’m small, I’m red and I’m out of patience. Pick two to worry about.", "Careful. I peck first, and it burns for an hour after.", "Talk all you like. I’ve a short fuse and a shorter walk to you."],
+    victory: ["Too hot for you? Thought so.", "And that was me being mild.", "Next! While I’m still warmed up!"],
+  },
   oldspur: {
     opening: [
       ["me", "They have stopped coming up to challenge me."],
@@ -415,6 +455,7 @@ const CALM: Record<string, string> = {
   duke: "Very well, little one. Plenty of room. A fair fight. You will still lose.",
   goldie: "Let’s keep it gentle, pet. A nice ordinary scrap, then a cuddle.",
   ziggy: "Fine, Rusty. No gimmicks. Unplugged. Just you and me.",
+  pepper: "Fine. Give me the form. I’ll fill it in after. A fair fight, clipboard down.",
 };
 
 /** Two scene-setting lines for each arena, for the narrator before an ordinary fight. */
@@ -566,6 +607,7 @@ const TWISTS: Record<string, Twist> = {
   "dot+henrietta": { label: "By the book: no throws", rules: { noThrows: true } },
   "goldie+shelly": { label: "Warm start: both crow meters begin full", rules: { startMeter: 100 } },
   "duke+pip": { label: "Tight squeeze: nowhere to back away to", rules: {}, maxSep: 250 },
+  "henrietta+pepper": { label: "Flash in the pan: one round settles it", rules: { rounds: 1 } },
 };
 
 /** The twist on the fight at the run's current rung, if it is a story rival fight. */

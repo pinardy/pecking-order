@@ -1,5 +1,6 @@
 import qrcode from "qrcode-generator";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import type { Feat } from "../achievements";
 import { ROSTER, fighterById } from "../game";
 import { NetLink, delayFor } from "../net";
 import { STAGES } from "../render/stage";
@@ -117,7 +118,8 @@ function CodeBox({ label, code, share }: { label: string; code: string; share: s
  * sends a reply code back. After that the two browsers are connected directly.
  * `invite` is a code that arrived in the page address: the join step starts filled in.
  */
-export function Online({ invite, onExit }: { invite?: string; onExit: () => void }) {
+/** `onMatch` is told about each match played to the end, as achievements see it (from this device's side). */
+export function Online({ invite, onExit, onMatch }: { invite?: string; onExit: () => void; onMatch?: (feat: Feat) => void }) {
   const link = useRef<NetLink | null>(null);
   const games = useRef(0);
   const [phase, dispatch] = useReducer(reduce, { at: "menu" });
@@ -322,6 +324,8 @@ export function Online({ invite, onExit }: { invite?: string; onExit: () => void
           pending.current = null;
           setLast(r);
           setWins(([mine, theirs]) => (r.winner === side ? [mine + 1, theirs] : [mine, theirs + 1]));
+          // Only the match itself counts towards achievements online: the feats in a fight are for beating the CPU.
+          onMatch?.({ mode: "online", online: true, won: r.winner === side, fighter: side === 0 ? setup.host : setup.guest, opponent: side === 0 ? setup.guest : setup.host, cpu: null, health: 0, perfect: false, smashed: false, bestCombo: 0, throws: 0, counters: 0 });
           dispatch({ do: "won", winner: r.winner });
         }}
         onQuit={leave}

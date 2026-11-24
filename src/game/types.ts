@@ -52,7 +52,7 @@ export type PoseKey =
   | "roll"
   | "throw";
 
-export type ShotKind = "crow" | "egg" | "grit" | "cheep" | "shard" | "quill" | "assist";
+export type ShotKind = "crow" | "egg" | "grit" | "cheep" | "shard" | "quill" | "pepper" | "assist";
 
 /** A box relative to the fighter's feet, with x measured in the direction the fighter faces and y upward. */
 export interface Box {

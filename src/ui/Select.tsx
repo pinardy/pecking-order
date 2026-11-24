@@ -117,7 +117,8 @@ export function Select({ mode, onBack, onStart, stats }: Props) {
   const back = () => (tag ? (team.length ? setTeam(team.slice(0, -1)) : onBack()) : second ? setFirst(null) : onBack());
 
   useEffect(() => {
-    const cols = 4;
+    // As many as the roster grid has across (see .roster in the stylesheet).
+    const cols = 5;
     const key = (e: KeyboardEvent) => {
       const move = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -cols, ArrowDown: cols }[e.key];
       if (move !== undefined) {

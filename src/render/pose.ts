@@ -131,7 +131,7 @@ function strike(f: Fighter, r: Rig, mv: Move, base: Pose, t: number): Pose {
       footTo(r, p, false, b.x1 - 14, b.y0 + span * 0.12);
       break;
     case "cast": {
-      const voice = mv.shot?.kind === "crow" || mv.shot?.kind === "cheep" || mv.shot?.kind === "grit";
+      const voice = mv.shot?.kind === "crow" || mv.shot?.kind === "cheep" || mv.shot?.kind === "grit" || mv.shot?.kind === "pepper";
       if (voice) {
         // Chest out, beak wide.
         p.rot = mv.shot?.kind === "grit" ? 0.5 : 0.2;
@@ -303,6 +303,12 @@ function intro(id: string, p: Pose, u: number): Pose {
     }
     case "ziggy":
       return { ...p, hrot: Math.sin(u * Math.PI * 5) * 0.45 * arc, wing: p.wing + arc * 2.8, wingExt: 1 + arc * 0.35, beak: 0.7 * arc };
+    case "pepper": {
+      // Tries to hold a sneeze in, and loses.
+      const snap = Math.sin(clamp01((u - 0.68) / 0.32) * Math.PI);
+      const hold = Math.sin(clamp01(u / 0.68) * Math.PI * 0.5);
+      return { ...p, hrot: -0.5 * hold * (1 - snap) + 0.45 * snap, hx: p.hx + 9 * snap, hy: p.hy + 4 * hold * (1 - snap), beak: snap, wing: p.wing + snap * 1.6, wingExt: 1 + snap * 0.3, eye: u < 0.68 ? "closed" : "angry" };
+    }
     default:
       // One flap of the wings.
       return { ...p, wing: p.wing + arc * 2.3, wingExt: 1 + arc * 0.35, beak: u > 0.2 && u < 0.8 ? 0.6 : 0 };
@@ -338,6 +344,11 @@ export function winPose(def: FighterDef, t: number): Pose {
     case "goldie":
       // Sits down, satisfied.
       return { ...REST, by: -r.hipY * 0.7, sy: 0.95, sx: 1.08, rot: Math.sin(t * 0.08) * 0.05, wing: -0.3, eye: "happy" };
+    case "pepper": {
+      // Still cross about it: stamping on the spot.
+      const stamp = Math.max(0, Math.sin(t * 0.45));
+      return { ...REST, f1y: stamp * 8, by: stamp * 1.5, rot: -0.08, hrot: beat * 0.12, wing: 1.1 + beat * 0.5, wingExt: 1.25, beak: 0.5, eye: "angry" };
+    }
     case "ziggy":
       // Head-banging, one wing in the air.
       return { ...REST, hrot: beat * 0.5, hy: -Math.abs(beat) * 4, hx: 3, wing: 2.5, wingExt: 1.35, beak: 0.7, eye: "angry", tail: 0.2 };

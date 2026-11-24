@@ -10,6 +10,8 @@ export interface SideStats {
   damage: number;
   hits: number;
   bestCombo: number;
+  /** Hits that caught the other side in the middle of an attack of their own. */
+  counters: number;
   blocks: number;
   throws: number;
   /** Times a block failed, by reason. */
@@ -23,7 +25,7 @@ export interface MatchStats {
   ticks: number;
 }
 
-const side = (): SideStats => ({ damage: 0, hits: 0, bestCombo: 0, blocks: 0, throws: 0, caught: { low: 0, high: 0, throw: 0 }, takenFrom: {} });
+const side = (): SideStats => ({ damage: 0, hits: 0, bestCombo: 0, counters: 0, blocks: 0, throws: 0, caught: { low: 0, high: 0, throw: 0 }, takenFrom: {} });
 
 export function statsListener(): { listener: Listener; stats: MatchStats } {
   const stats: MatchStats = { sides: [side(), side()], ticks: 0 };
@@ -40,6 +42,7 @@ export function statsListener(): { listener: Listener; stats: MatchStats } {
           by.damage += e.damage;
           by.hits++;
           by.bestCombo = Math.max(by.bestCombo, e.combo);
+          if (e.counter) by.counters++;
           took(e.side, e.move, e.damage);
         } else if (e.type === "throw") {
           stats.sides[e.side].throws++;

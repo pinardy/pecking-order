@@ -4,7 +4,7 @@ import { text } from "./text";
 import { altPalette, drawChicken, flashPalette, REST } from "./chicken";
 import { poseOf } from "./pose";
 import { GROUND_Y, VIEW_H, drawStage, type StageLayers } from "./stage";
-import { BARN, CREAM, CREAM_DEEP, INK, LEAF, STRAW, STRAW_DEEP } from "../palette";
+import { BARN, CARROT, CREAM, CREAM_DEEP, INK, LEAF, STRAW, STRAW_DEEP } from "../palette";
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -45,6 +45,17 @@ export function cameraTarget(m: Match, w: number): number {
 
 
 const GRIT = [[0, 0, 0.4], [-0.7, 0.25, 0.3], [-0.4, -0.45, 0.28], [-1.2, -0.1, 0.24], [-1.6, 0.3, 0.2]];
+/** The puffs of a sneeze cloud (x, y, radius, as shares of the shot's size), and the peppercorns in it. */
+const PUFF = [[0, 0, 0.75], [-0.55, 0.3, 0.55], [0.5, -0.25, 0.55], [-0.35, -0.45, 0.5], [0.4, 0.4, 0.45]];
+const CORNS = [[0.1, 0.05], [-0.5, 0.3], [0.45, -0.3], [-0.3, -0.4], [0.35, 0.42], [-0.1, 0.55]];
+/** The training overlay: each kind of box, its fill and outline, and what the key calls it. Drawn in this order. */
+const BOX_COLOURS = [
+  ["hurt", "rgba(80,150,255,0.22)", "rgba(120,180,255,0.9)", "Can be hit"],
+  ["safe", "rgba(200,200,210,0.08)", "rgba(215,215,225,0.6)", "Cannot be hit"],
+  ["attack", "rgba(255,70,50,0.35)", "rgba(255,110,90,0.95)", "Attack"],
+  ["grab", "rgba(190,90,255,0.3)", "rgba(215,150,255,0.95)", "Throw reach"],
+  ["shots", "rgba(255,210,60,0.35)", "rgba(255,225,120,0.95)", "Shot"],
+] as const;
 const FRONT_FIRST = [1, 0];
 const BACK_FIRST = [0, 1];
 
@@ -118,6 +129,26 @@ export function drawShot(ctx: Ctx, s: Shot, tick: number) {
         ctx.fill();
       }
       break;
+    case "pepper": {
+      // A sneeze: a drifting puff with peppercorns tumbling in it, thinning out as it goes.
+      const fade = Math.min(1, s.life / 12);
+      for (const [px, py, pr] of PUFF) {
+        ctx.globalAlpha = fade * 0.5;
+        ctx.fillStyle = s.big ? CARROT : CREAM_DEEP;
+        ctx.beginPath();
+        ctx.arc(px * z + Math.sin(tick * 0.25 + px * 7) * 1.5, py * z + Math.cos(tick * 0.2 + py * 5) * 1.5, pr * z, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = fade;
+      ctx.fillStyle = INK;
+      for (const [gx, gy] of CORNS) {
+        const a = tick * 0.3 + gx * 9;
+        ctx.beginPath();
+        ctx.arc(gx * z + Math.cos(a) * 2, gy * z + Math.sin(a) * 2, Math.max(1.5, z * 0.07), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      break;
+    }
     case "quill":
       // A feather dart, point first.
       ctx.fillStyle = BARN;
@@ -464,9 +495,7 @@ export function drawMatch(ctx: Ctx, m: Match, stage: StageLayers, v: View, parti
         ctx.strokeRect(b.l, -b.t, b.r - b.l, b.t - b.b);
       }
     };
-    draw(boxes.hurt, "rgba(80,150,255,0.22)", "rgba(120,180,255,0.9)");
-    draw(boxes.attack, "rgba(255,70,50,0.35)", "rgba(255,110,90,0.95)");
-    draw(boxes.shots, "rgba(255,210,60,0.35)", "rgba(255,225,120,0.95)");
+    for (const [kind, fill, stroke] of BOX_COLOURS) draw(boxes[kind], fill, stroke);
   }
   ctx.restore();
 
@@ -487,6 +516,18 @@ export function drawMatch(ctx: Ctx, m: Match, stage: StageLayers, v: View, parti
   }
   if (v.inputs) {
     for (let i = 0; i < v.inputs.length; i++) text(ctx, v.inputs[i], 14, 126 + i * 14, 12, i === 0 ? CREAM : "rgba(255,246,227,0.6)", "left", 600, 1);
+  }
+  if (v.debug) {
+    // What the colours mean, down the right-hand edge (the input display has the left).
+    BOX_COLOURS.forEach(([, fill, stroke, label], i) => {
+      const y = 126 + i * 15;
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(v.w - 24, y - 9, 10, 10);
+      ctx.strokeRect(v.w - 24, y - 9, 10, 10);
+      text(ctx, label, v.w - 30, y, 10, CREAM, "right", 600, 1);
+    });
   }
   if (v.perf) text(ctx, v.perf, 8, VIEW_H - 8, 10, CREAM, "left", 600, 1);
 }
