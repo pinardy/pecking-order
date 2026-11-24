@@ -4,7 +4,7 @@ import { BONUS, NO_INPUT, ROSTER, SCARECROW, TRAINING, createCpu, createMatch, c
 // A fingerprint of how the engine plays: eight CPU matches, two bonus rounds and a training
 // session, with every fighter's position, health, meter, state and score folded into one
 // number per run, tick by tick. Any change in behaviour, however small, changes them.
-// They were last re-recorded for the launcher, burst, comeback meter and a balance pass.
+// They were last re-recorded when every CPU level was made easier (the engine's own rules were not touched).
 // (Replays are tied to the engine's code by a fingerprint worked out at build time; see vite.config.ts.)
 //
 // If you change the rules on purpose (a move's timing, a damage value), this will fail.
@@ -24,7 +24,7 @@ function fold(h: number, m: Match): number {
   return (Math.imul(h, 31) + str(m.phase) + m.timer) | 0;
 }
 
-const EXPECTED = [1276471418, 5266, -172433557, 4308, -413566414, 3233, 1128046721, 7801, -1459976010, 4229, -674935111, 3290, -1756251916, 4519, 688406991, 6677, -931089665, 1379, 2005962848, 1279, -1733200757];
+const EXPECTED = [-407805669, 4220, -1479373883, 5637, -1073401887, 3488, 685598382, 5865, -350755678, 5138, -102724799, 3512, -986015781, 5104, 1461881689, 6084, 1877962813, 1512, -1249510044, 1344, -821817893];
 
 it("plays exactly as it did before", () => {
   const out: number[] = [];
