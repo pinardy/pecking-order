@@ -28,17 +28,19 @@ interface Tuning {
 }
 
 /** Chance of shaking off a throw. */
-const TECH: Record<CpuLevel, number> = { 0: 0.05, 1: 0.25, 2: 0.55, 3: 0.7 };
+const TECH: Record<CpuLevel, number> = { 0: 0.03, 1: 0.15, 2: 0.4, 3: 0.62 };
 
 /** Two quick taps the same way: a dash. Fresh objects each time, since beats count themselves down. */
 const dashBeats = (toward: 1 | -1): Beat[] => [{ toward, ticks: 2 }, { ticks: 2 }, { toward, ticks: 2 }, { ticks: 10 }];
 
+// Each level sits about halfway between the one below it and where it stood before the levels were eased:
+// Hen blocks a third of what it sees coming, Rooster two thirds, and only Champion is close to relentless.
 const TUNING: Record<CpuLevel, Tuning> = {
-  0: { guard: 0.18, think: 26, antiAir: 0.05, combo: 0.05, push: 0.45, sup: 0.15, quick: 0.25 },
-  1: { guard: 0.5, think: 15, antiAir: 0.35, combo: 0.4, push: 0.62, sup: 0.45, quick: 0.45 },
-  2: { guard: 0.82, think: 8, antiAir: 0.75, combo: 0.8, push: 0.75, sup: 0.8, quick: 0.6 },
-  // Champion: thinks almost every frame, punishes jumps, rarely drops a combo, and reacts to more of your pecks.
-  3: { guard: 0.9, think: 5, antiAir: 0.9, combo: 0.95, push: 0.82, sup: 0.92, quick: 0.72 },
+  0: { guard: 0.1, think: 34, antiAir: 0.03, combo: 0.03, push: 0.35, sup: 0.1, quick: 0.15 },
+  1: { guard: 0.34, think: 20, antiAir: 0.2, combo: 0.22, push: 0.54, sup: 0.3, quick: 0.33 },
+  2: { guard: 0.66, think: 11, antiAir: 0.55, combo: 0.6, push: 0.68, sup: 0.62, quick: 0.52 },
+  // Champion: quick to decide, punishes most jumps, seldom drops a combo, and reacts to more of your pecks.
+  3: { guard: 0.85, think: 7, antiAir: 0.82, combo: 0.87, push: 0.78, sup: 0.86, quick: 0.65 },
 };
 
 /** How a CPU bird plays. (A boss in its second phase is faster and hits harder, but thinks no better.) */
