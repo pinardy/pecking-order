@@ -34,6 +34,8 @@ npm run lint
 npm run build      # bundle to a single dist/index.html
 ```
 
+Pushing to `main` builds the game and publishes `dist/` to GitHub Pages (`.github/workflows/deploy.yml`).
+
 The code is in three layers, each depending only on the one before it:
 
 - `src/game/`: the engine. Plain, deterministic TypeScript at a fixed 60 Hz, with no DOM.
