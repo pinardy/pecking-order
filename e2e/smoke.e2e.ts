@@ -16,6 +16,13 @@ async function open(page: Page, settings: Record<string, unknown> = {}, path = "
 
 const fight = (page: Page) => page.locator("canvas[aria-label]");
 
+/** Story mode: the run across the yard before a fight can always be skipped from its pause menu. */
+async function skipTrail(page: Page) {
+  await expect(page.locator(".trail canvas")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Skip to the fight" }).click();
+}
+
 test("arcade: pick a fighter, see the pairing, fight, pause and resume", async ({ page }) => {
   const errors = await open(page);
   await page.getByRole("button", { name: "Arcade" }).click();
@@ -454,7 +461,7 @@ test("story mode: its own mode, with talking heads, a line at a time, and skippa
   const headRight = (await box.locator(".talking-head").boundingBox())!;
   const boxRight = (await box.boundingBox())!;
   expect(boxRight.x + boxRight.width - (headRight.x + headRight.width)).toBeLessThan(40);
-  // Skip goes straight to the pairing card and the fight.
+  // Skip leaves the scene for the trail (which ?auto runs by itself), and then the pairing card and the fight.
   await page.getByRole("button", { name: "Skip" }).click();
   await expect(page.locator(".caption")).toHaveText("Fight 1 of 5");
   await expect(fight(page)).toBeVisible({ timeout: 10_000 });
@@ -599,6 +606,7 @@ test("story: a rival fight plays by a rule of its own", async ({ page }) => {
   await page.getByRole("button", { name: /^Continue story/ }).click();
   await expect(page.locator(".dialogue")).toBeVisible();
   await page.getByRole("button", { name: "Skip" }).click();
+  await skipTrail(page);
   await expect(page.locator(".caption")).toHaveText("Fight 4 of 5: your rival");
   await expect(page.locator(".versus")).toContainText("Sunrise set: 40-second rounds");
   expect(errors).toEqual([]);
@@ -626,6 +634,7 @@ test("chapters: a story fight already won can be played again, without touching 
   await rows.nth(1).click();
   await expect(page.locator(".dialogue")).toBeVisible();
   await page.getByRole("button", { name: "Skip" }).click();
+  await skipTrail(page);
   await expect(page.locator(".caption")).toHaveText("Chapter 2");
   await expect(fight(page)).toBeVisible({ timeout: 10_000 });
   // The story in progress (Goldie's) is just as it was.
@@ -650,6 +659,7 @@ test("story choices: answering a rival calmly takes the twist away; fired up giv
     await page.keyboard.press("Enter");
     await expect(choices).toBeVisible();
     await choices.getByRole("button", { name: which }).click();
+    await skipTrail(page);
   };
   await answer(/Keep it civil/);
   await expect(page.locator(".versus")).toContainText("Kept civil: a fair fight, no twist");
@@ -717,6 +727,7 @@ test("the ninth fighter: Pepper has moves of her own, and a rival fight with a r
   await page.getByRole("button", { name: /^Continue story/ }).click();
   await expect(page.locator(".dialogue")).toBeVisible();
   await page.getByRole("button", { name: "Skip" }).click();
+  await skipTrail(page);
   await expect(page.locator(".caption")).toHaveText("Fight 4 of 5: your rival");
   await expect(page.locator(".versus")).toContainText("Flash in the pan: one round settles it");
   expect(errors).toEqual([]);
@@ -751,5 +762,37 @@ test("achievements: what was done before counts, the list shows how far along th
   await page.goto("/");
   await page.getByRole("button", { name: "More" }).click();
   await expect(page.getByRole("button", { name: "Achievements: 4 of 29 earned" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("story: a trail to cross before each fight, with corn worth a head start on the crow meter", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.addInitScript(() => {
+    if (!localStorage.getItem("po-story")) localStorage.setItem("po-story", JSON.stringify({ v: 1, p1: "rusty", ladder: ["dot", "pip", "goldie", "ziggy", "oldspur"], rung: 1, level: 1, score: 0, bonus: false }));
+  });
+  // ?auto (development only) has the test player run the trail, as it has a CPU fight the fights.
+  const errors = await open(page, {}, "/?auto&speed=6");
+  await page.getByRole("button", { name: /^Story/ }).click();
+  await page.getByRole("button", { name: /^Continue story/ }).click();
+  await page.getByRole("button", { name: "Skip" }).click();
+  const trail = page.locator(".trail canvas");
+  await expect(trail).toHaveAttribute("aria-label", "Rusty on the way to Pip");
+  await expect(page.locator(".trail .hint")).toContainText("Reach Pip");
+  // It pauses like a fight, and the story is still where it was.
+  await page.keyboard.press("Escape");
+  const paused = page.getByRole("dialog", { name: "Paused" });
+  for (const name of ["Resume", "Start the trail again", "Skip to the fight", "Leave story"]) await expect(paused.getByRole("button", { name })).toBeVisible();
+  await paused.getByRole("button", { name: "Resume" }).click();
+  // The far end is the pairing card for the same fight, and then the fight, with some meter already in hand.
+  await expect(page.locator(".caption")).toHaveText("Fight 2 of 5", { timeout: 60_000 });
+  await page.locator(".versus").click();
+  await expect(fight(page)).toBeVisible({ timeout: 10_000 });
+  expect(JSON.parse((await page.evaluate(() => localStorage.getItem("po-story")))!)).toMatchObject({ p1: "rusty", rung: 1 });
+  // Arcade has no trails.
+  await page.goto("/");
+  await page.getByRole("button", { name: "Arcade" }).click();
+  await page.getByRole("button", { name: /^Choose/ }).click();
+  await expect(page.locator(".caption")).toHaveText("Fight 1 of 5");
+  await expect(page.locator(".trail")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
