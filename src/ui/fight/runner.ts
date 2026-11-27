@@ -30,13 +30,13 @@ export interface RunnerHooks {
   end(): void;
 }
 
-/** Starts the loop. Returns a function that stops it. */
 /**
  * Development only: ?speed=8 runs the game clock eight times as fast, so that tests which play
  * whole matches between CPUs finish in seconds. The match itself plays out exactly the same.
  */
 const SPEED = import.meta.env.DEV ? Math.max(1, Math.min(20, Number(new URLSearchParams(location.search).get("speed")) || 1)) : 1;
 
+/** Starts the loop. Returns a function that stops it. */
 export function runMatch(m: Match, source: InputSource, hooks: RunnerHooks): () => void {
   let raf = 0;
   let last = performance.now();

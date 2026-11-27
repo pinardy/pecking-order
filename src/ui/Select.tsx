@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { BOSS, ROSTER, inputFor, ratings, type FighterDef } from "../game";
 import { STAGES, VIEW_H, buildStage, drawStage } from "../render/stage";
 import { play } from "../sounds";
@@ -55,6 +55,9 @@ function ArenaThumb({ index }: { index: number }) {
   }, [index]);
   return <canvas ref={ref} aria-hidden="true" />;
 }
+
+/** Fighters across the grid: nine make two rows, and Old Spur, once earned, completes the second. */
+const COLS = 5;
 
 /** Pick a fighter; in versus and training, then pick who they face, and where. */
 export function Select({ mode, onBack, onStart, stats }: Props) {
@@ -117,10 +120,8 @@ export function Select({ mode, onBack, onStart, stats }: Props) {
   const back = () => (tag ? (team.length ? setTeam(team.slice(0, -1)) : onBack()) : second ? setFirst(null) : onBack());
 
   useEffect(() => {
-    // As many as the roster grid has across (see .roster in the stylesheet).
-    const cols = 5;
     const key = (e: KeyboardEvent) => {
-      const move = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -cols, ArrowDown: cols }[e.key];
+      const move = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -COLS, ArrowDown: COLS }[e.key];
       if (move !== undefined) {
         e.preventDefault();
         look((cursor + move + list.length) % list.length);
@@ -149,7 +150,7 @@ export function Select({ mode, onBack, onStart, stats }: Props) {
         <button type="button" className="link" onClick={() => look(Math.floor(Math.random() * list.length))}>Random</button>
       </header>
       <div className="select-body">
-        <div className="roster" role="listbox" aria-label="Fighters">
+        <div className="roster" role="listbox" aria-label="Fighters" style={{ "--cols": COLS } as CSSProperties}>
           {list.map((f, i) => (
             <button key={f.id} type="button" role="option" aria-selected={i === cursor} className={i === cursor ? "fighter-card on" : "fighter-card"} onClick={() => look(i)} onDoubleClick={confirm}>
               <Portrait fighter={f} size={56} animate={false} />

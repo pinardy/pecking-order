@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ACHIEVEMENTS, newlyEarned, type Achievement, type Feat } from "./achievements";
+import { ACHIEVEMENTS, newlyEarned, plainFeat, type Achievement, type Feat } from "./achievements";
 import { afterBonus, afterFight, isFinal, nextStep, rivalAt, startRun, type Run } from "./arcade";
 import { dailyFor, type Daily } from "./daily";
 import { startMusic, stopMusic } from "./music";
@@ -156,14 +156,14 @@ function boutFor(run: Run): Bout {
 
 /** A finished match as achievements see it. Player 1 is the person at this device. */
 function featOf(b: Bout, r: FightResult): Feat {
-  const mine = r.stats?.sides[0];
-  return {
+  const { bestCombo, throws, counters } = r.stats?.sides[0] ?? {};
+  return plainFeat({
     mode: b.mode, won: r.winner === 0, fighter: b.p1.id, opponent: b.p2.id,
     // The scarecrow is nobody: its round counts for the bonus only.
     cpu: b.mode === "bonus" ? null : b.cpu,
     health: r.hp / b.p1.hp, perfect: r.points.perfect > 0, smashed: b.mode === "bonus" && r.points.bonus > 0,
-    bestCombo: mine?.bestCombo ?? 0, throws: mine?.throws ?? 0, counters: mine?.counters ?? 0,
-  };
+    ...(r.stats ? { bestCombo, throws, counters } : {}),
+  });
 }
 
 let fightCount = 0;
@@ -493,77 +493,48 @@ function Game() {
       const sides: [string, string] = b.p1.id === b.p2.id ? [tagA, tagB] : [b.p1.name, b.p2.name];
       // Advice only for someone who just lost to the CPU.
       const tip = !won && b.cpu !== null && result.stats ? tipFor(result.stats, 0, b.p2) : undefined;
-      const extras = (
-        <>
-          {result.replay && <button type="button" className="ghost" onClick={() => setSharing({ replay: result.replay!, labels: labelsFor(b), back: screen })}>Replay</button>}
-        </>
-      );
+      // What differs from one kind of match to the next: the words, and where the buttons lead.
+      let headline = `${champ.name} wins`;
+      let note: string | undefined;
+      let ending: string | undefined;
+      let actions;
       if (b.gauntlet) {
         const g = b.gauntlet;
-        const again = <button type="button" onClick={() => setScreen({ name: "select", mode: g.kind })}>Play again</button>;
         const total = bossRushOrder(b.p1).length;
         const best = g.kind === "bossrush" ? (stats.bossRush.cleared ? "You have cleared the boss rush." : `Your best is ${stats.bossRush.best} of ${total}.`) : g.kind === "survival" ? `Your best is ${stats.survival}.` : stats.timeAttack ? `Your best is ${clockText(stats.timeAttack)}.` : "";
-        view = (
-          <Result
-            onBack={toTitle}
-            winner={champ}
-            cheer={won}
-            headline={g.kind === "bossrush" ? (g.wins >= total ? "Boss rush cleared" : `${g.wins} of ${total} beaten`) : g.kind === "survival" ? `Survived ${g.wins} ${g.wins === 1 ? "fight" : "fights"}` : won ? `Five down in ${clockText(g.ticks)}` : `${champ.name} wins`}
-            note={g.kind === "timeattack" && !won ? `Stopped at fight ${g.wins + 1} of ${TIME_ATTACK_FIGHTS}. No time set. ${best}` : best}
-            stats={result.stats}
-            sides={sides}
-            tip={tip}
-          >
-            {again}
-            {extras}
-          </Result>
-        );
+        headline = g.kind === "bossrush" ? (g.wins >= total ? "Boss rush cleared" : `${g.wins} of ${total} beaten`) : g.kind === "survival" ? `Survived ${g.wins} ${g.wins === 1 ? "fight" : "fights"}` : won ? `Five down in ${clockText(g.ticks)}` : headline;
+        note = g.kind === "timeattack" && !won ? `Stopped at fight ${g.wins + 1} of ${TIME_ATTACK_FIGHTS}. No time set. ${best}` : best;
+        actions = <button type="button" onClick={() => setScreen({ name: "select", mode: g.kind })}>Play again</button>;
       } else if (b.run) {
         const r = b.run;
         const next = afterFight(r, won, result.score);
         const left = r.ladder.length - r.rung - 1;
-        view = (
-          <Result
-            onBack={toTitle}
-            winner={champ}
-            cheer={won}
-            alt={alt}
-            headline={next ? `${champ.name} wins` : "Top of the pecking order"}
-            ending={next || r.story ? undefined : b.p1.ending}
-            stats={result.stats}
-            sides={sides}
-            tip={tip}
-            note={r.story ? (!next ? `Story finished on ${LEVEL_NAMES[r.level]}. The ending is kept under More.` : won ? `${left} ${left === 1 ? "fight" : "fights"} to go.` : `Knocked back at fight ${r.rung + 1} of ${r.ladder.length}. Try again.`) : !next ? `${points(result.score)} on ${LEVEL_NAMES[r.level]}. ${breakdown(result.points)}` : won ? `${points(result.score)}. ${breakdown(result.points)} ${left} ${left === 1 ? "fight" : "fights"} to go.` : `Knocked off the ladder at fight ${r.rung + 1} of ${r.ladder.length} with ${points(result.score)}.`}
-          >
-            {!next ? (
-              <button type="button" onClick={() => setScreen({ name: "select", mode: r.story ? "story" : "arcade" })}>Play again</button>
-            ) : won ? (
-              <button type="button" onClick={() => climb(next, "won")}>{r.story ? "Continue" : next.bonus ? "Bonus round" : "Next fight"}</button>
-            ) : (
-              <button type="button" onClick={() => announce(b)}>Play again</button>
-            )}
-            {extras}
-          </Result>
-        );
+        const toGo = `${left} ${left === 1 ? "fight" : "fights"} to go.`;
+        if (!next) headline = "Top of the pecking order";
+        ending = next || r.story ? undefined : b.p1.ending;
+        note = r.story ? (!next ? `Story finished on ${LEVEL_NAMES[r.level]}. The ending is kept under More.` : won ? toGo : `Knocked back at fight ${r.rung + 1} of ${r.ladder.length}. Try again.`)
+          : !next ? `${points(result.score)} on ${LEVEL_NAMES[r.level]}. ${breakdown(result.points)}`
+          : won ? `${points(result.score)}. ${breakdown(result.points)} ${toGo}`
+          : `Knocked off the ladder at fight ${r.rung + 1} of ${r.ladder.length} with ${points(result.score)}.`;
+        actions = !next ? <button type="button" onClick={() => setScreen({ name: "select", mode: r.story ? "story" : "arcade" })}>Play again</button>
+          : won ? <button type="button" onClick={() => climb(next, "won")}>{r.story ? "Continue" : next.bonus ? "Bonus round" : "Next fight"}</button>
+          : <button type="button" onClick={() => announce(b)}>Play again</button>;
       } else {
-        view = (
-          <Result
-            onBack={toTitle}
-            winner={champ}
-            cheer={b.cpu === null || won}
-            alt={alt}
-            headline={`${champ.name} wins`}
-            note={b.daily ? (won ? `Daily challenge won${stats.daily.streak > 1 ? `, ${stats.daily.streak} days running` : ""}. A new one arrives tomorrow.` : "It is the same fight all day. Have another go.") : tally(b.series) && `Series: ${tally(b.series)}`}
-            stats={result.stats}
-            sides={sides}
-            tip={tip}
-          >
+        note = b.daily ? (won ? `Daily challenge won${stats.daily.streak > 1 ? `, ${stats.daily.streak} days running` : ""}. A new one arrives tomorrow.` : "It is the same fight all day. Have another go.") : tally(b.series) && `Series: ${tally(b.series)}`;
+        actions = (
+          <>
             {(!b.daily || !won) && <button type="button" onClick={() => announce(b)}>{b.daily ? "Play again" : "Rematch"}</button>}
             {!b.daily && <button type="button" className="ghost" onClick={() => setScreen({ name: "select", mode: "versus" })}>Choose fighters</button>}
-            {extras}
-          </Result>
+          </>
         );
       }
+      view = (
+        // Two people at one device: whoever won, somebody is pleased. (A gauntlet's winner is drawn in ordinary feathers.)
+        <Result onBack={toTitle} winner={champ} cheer={won || (b.cpu === null && !b.gauntlet && !b.run)} alt={b.gauntlet ? undefined : alt} headline={headline} note={note} ending={ending} stats={result.stats} sides={sides} tip={tip}>
+          {actions}
+          {result.replay && <button type="button" className="ghost" onClick={() => setSharing({ replay: result.replay!, labels: labelsFor(b), back: screen })}>Replay</button>}
+        </Result>
+      );
       break;
     }
   }

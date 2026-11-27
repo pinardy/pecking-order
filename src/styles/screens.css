@@ -204,10 +204,10 @@
   align-content: start;
 }
 
-/* Five across: nine fighters make two rows, and Old Spur, once earned, completes the second. */
+/* How many across is set by the select screen (--cols), which steers by the same number. */
 .roster {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
   gap: 0.4rem;
 }
 

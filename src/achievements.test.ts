@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { ACHIEVEMENTS, QUICK_TIME_ATTACK, newlyEarned, type Feat } from "./achievements";
+import { ACHIEVEMENTS, QUICK_TIME_ATTACK, newlyEarned, plainFeat, type Feat } from "./achievements";
 import { ROSTER } from "./game";
 import { emptyStats, type Stats } from "./ui/stats";
 
 const stats = (over: Partial<Stats> = {}): Stats => ({ ...emptyStats(), ...over });
 /** An unremarkable loss to a Hen-level CPU. */
-const feat = (over: Partial<Feat> = {}): Feat => ({ mode: "versus", won: false, fighter: "rusty", opponent: "dot", cpu: 1, health: 0, perfect: false, smashed: false, bestCombo: 2, throws: 0, counters: 0, ...over });
+const feat = (over: Partial<Feat> = {}): Feat => plainFeat({ mode: "versus", won: false, fighter: "rusty", opponent: "dot", cpu: 1, bestCombo: 2, ...over });
 const ids = (s: Stats, f: Feat | null = null, held: Record<string, string> = {}) => newlyEarned(held, s, f).map((a) => a.id);
 
 describe("achievements", () => {
