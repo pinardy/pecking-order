@@ -1,6 +1,6 @@
 import qrcode from "qrcode-generator";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
-import type { Feat } from "../achievements";
+import { plainFeat, type Feat } from "../achievements";
 import { ROSTER, fighterById } from "../game";
 import { NetLink, delayFor } from "../net";
 import { STAGES } from "../render/stage";
@@ -325,7 +325,7 @@ export function Online({ invite, onExit, onMatch }: { invite?: string; onExit: (
           setLast(r);
           setWins(([mine, theirs]) => (r.winner === side ? [mine + 1, theirs] : [mine, theirs + 1]));
           // Only the match itself counts towards achievements online: the feats in a fight are for beating the CPU.
-          onMatch?.({ mode: "online", online: true, won: r.winner === side, fighter: side === 0 ? setup.host : setup.guest, opponent: side === 0 ? setup.guest : setup.host, cpu: null, health: 0, perfect: false, smashed: false, bestCombo: 0, throws: 0, counters: 0 });
+          onMatch?.(plainFeat({ mode: "online", online: true, won: r.winner === side, fighter: side === 0 ? setup.host : setup.guest, opponent: side === 0 ? setup.guest : setup.host, cpu: null }));
           dispatch({ do: "won", winner: r.winner });
         }}
         onQuit={leave}

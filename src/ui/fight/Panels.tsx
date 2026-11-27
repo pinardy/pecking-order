@@ -51,7 +51,6 @@ export interface MenuItem {
   on?: boolean;
 }
 
-/** The pause sheet. The first button is the safe way back; the rest are whatever suits this fight. */
 /** The pause menu and its sub-menus. A sub-menu has Back at the top left of its title; the top level leads with its main action. */
 export function PauseMenu({ title, note, primary, back, items, onClose }: { title: string; note?: string; primary?: MenuItem; back?: () => void; items: MenuItem[]; onClose: () => void }) {
   return (

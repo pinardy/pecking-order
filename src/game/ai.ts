@@ -5,7 +5,7 @@ import { MAX_METER, NO_INPUT, type Fighter, type Input, type Match, type Move } 
 // The CPU looks at the match and returns an Input, exactly like a player holding a controller.
 // It never touches the engine's state, so it cannot cheat beyond reacting faster on higher levels.
 
-/** 0 = Chick (learning), 1 = Hen, 2 = Rooster. */
+/** 0 = Chick (learning), 1 = Hen, 2 = Rooster, 3 = Champion. */
 export type CpuLevel = 0 | 1 | 2 | 3;
 /** What a sparring partner does. "swing" and "sweep" walk up and repeat one attack on a steady beat, for the lessons. */
 export type DummyMode = "stand" | "block" | "fight" | "swing" | "sweep";

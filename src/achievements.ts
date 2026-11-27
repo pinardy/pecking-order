@@ -25,6 +25,9 @@ export interface Feat {
   counters: number;
 }
 
+/** A match with nothing remarkable in it beyond what is given. */
+export const plainFeat = (given: Pick<Feat, "mode" | "won" | "fighter" | "opponent" | "cpu"> & Partial<Feat>): Feat => ({ health: 0, perfect: false, smashed: false, bestCombo: 0, throws: 0, counters: 0, ...given });
+
 export interface Achievement {
   id: string;
   name: string;

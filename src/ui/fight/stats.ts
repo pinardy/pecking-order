@@ -94,16 +94,8 @@ function* tallying(r: Replay, slice: number): Generator<void, MatchStats> {
   return stats;
 }
 
-/** The stats for a recorded match, by playing it through in one go. */
-export function statsFromReplay(r: Replay): MatchStats {
-  const run = tallying(r, Infinity);
-  let step = run.next();
-  while (!step.done) step = run.next();
-  return step.value;
-}
-
 /**
- * The same, a few milliseconds at a time with the screen free to repaint in between. Used at the end
+ * The stats for a recorded match, by playing it through a few milliseconds at a time with the screen free to repaint in between. Used at the end
  * of an online match, where the live count cannot be trusted and a pause on a slow phone would show.
  */
 export async function statsInSlices(r: Replay, slice = 1200): Promise<MatchStats> {
