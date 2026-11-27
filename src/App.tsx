@@ -27,6 +27,7 @@ import { LEVEL_NAMES, SettingsProvider, useSettings } from "./ui/settings";
 import { loadEarned, loadRun, loadStats, saveEarned, recordClear, recordDaily, recordFight, recordBossRush, recordChapter, recordScore, recordStory, recordSurvival, recordTimeAttack, saveRun } from "./ui/stats";
 import { Title, type Mode } from "./ui/Title";
 import { Tournament } from "./ui/Tournament";
+import { Trail } from "./ui/Trail";
 import { Versus } from "./ui/Versus";
 
 /** One match and everything needed to start it again or move on from it. */
@@ -98,6 +99,17 @@ function answered(next: Extract<Screen, { name: "versus" }>, choice: Choice): Sc
   return { ...next, bout: { ...b, extraRules: { ...b.extraRules, meters: [100, b.extraRules?.startMeter ?? 0] }, twist: `Fired up: you start with a full meter. ${b.twist ?? ""}`.trim() } };
 }
 
+/** The most of the crow meter that a trail's corn can be worth at the start of its fight. */
+const CORN_METER = 50;
+
+/** The fight at the end of a trail, with the corn picked up on the way turned into a head start on the crow meter. */
+function fed(next: Extract<Screen, { name: "versus" }>, corn: number): Screen {
+  const b = next.bout;
+  const start = b.extraRules?.startMeter ?? 0;
+  const [mine, theirs] = b.extraRules?.meters ?? [start, start];
+  return { ...next, bout: { ...b, extraRules: { ...b.extraRules, meters: [Math.max(mine, Math.round(corn * CORN_METER)), theirs] } } };
+}
+
 /** Ticks as minutes, seconds and tenths. */
 function clockText(ticks: number): string {
   const s = ticks / 60;
@@ -117,6 +129,8 @@ type Screen =
   | { name: "storyhub" }
   /** A story scene between arcade fights, then wherever the run goes next. */
   | { name: "story"; scene: Scene; next: Screen; n: number }
+  /** Story mode: the run across the yard to whoever is next, then the fight with them. */
+  | { name: "trail"; next: Extract<Screen, { name: "versus" }>; n: number }
   | { name: "online"; invite?: string };
 
 // An invite link carries its code after #join=. Read it once, then tidy the address.
@@ -247,7 +261,7 @@ function Game() {
   }, [home]);
 
   // The menu theme plays everywhere but the fights (which play their arena's loop) and the pairing card (a moment of quiet).
-  const quiet = screen.name === "fight" || screen.name === "replay" || screen.name === "versus";
+  const quiet = screen.name === "fight" || screen.name === "replay" || screen.name === "versus" || screen.name === "trail";
   useEffect(() => {
     if (!quiet) startMusic("menu");
     else if (screen.name === "versus") stopMusic();
@@ -386,7 +400,16 @@ function Game() {
       break;
     case "story": {
       const { scene, next } = screen;
-      view = <Cutscene key={screen.n} scene={scene} last={next.name === "versus" || next.name === "fight" ? "Fight" : next.name === "result" ? "Finish" : "The end"} onDone={(choice) => setScreen(choice && next.name === "versus" ? answered(next, choice) : next)} />;
+      view = <Cutscene key={screen.n} scene={scene} last={next.name === "versus" || next.name === "fight" ? "Fight" : next.name === "result" ? "Finish" : "The end"} onDone={(choice) => {
+        const to = choice && next.name === "versus" ? answered(next, choice) : next;
+        // In a story, the next opponent is at the far end of a trail.
+        setScreen(to.name === "versus" && to.bout.run?.story ? { name: "trail", next: to, n: ++fightCount } : to);
+      }} />;
+      break;
+    }
+    case "trail": {
+      const b = screen.next.bout;
+      view = <Trail key={screen.n} p1={b.p1} p2={b.p2} stage={b.stage} rung={b.run?.rung ?? 0} alt={b.alts?.[0]} onDone={(corn) => setScreen(fed(screen.next, corn))} onQuit={toTitle} />;
       break;
     }
     case "storyhub":
@@ -539,7 +562,7 @@ function Game() {
     }
   }
 
-  const inFight = screen.name === "fight" || screen.name === "tutorial" || screen.name === "replay";
+  const inFight = screen.name === "fight" || screen.name === "tutorial" || screen.name === "replay" || screen.name === "trail";
   return (
     <>
       {view}
